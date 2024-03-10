@@ -134,7 +134,7 @@ void procedureDefinition() :
 {
   <LPAREN><DEFUN>(tokenFunName = <WORD>){
 	Robot.functionMap.put(tokenFunName.image, paramsList);
-    }(params(tokenFunName.image))?(block())
+    }(params(tokenFunName.image))?(block())<RPAREN>
 }
 
 void params(String funName) :

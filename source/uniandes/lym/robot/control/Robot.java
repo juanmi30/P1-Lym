@@ -71,6 +71,7 @@ Robot.functionMap.put(tokenFunName.image, paramsList);
       ;
     }
     block();
+    jj_consume_token(RPAREN);
 }
 
   final public void params(String funName) throws ParseException {Token tokenParamName;
