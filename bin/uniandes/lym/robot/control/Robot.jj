@@ -26,7 +26,11 @@ package uniandes.lym.robot.control;
 
 import uniandes.lym.robot.kernel.*;
 import uniandes.lym.robot.view.Console;
- 
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
 import java.awt.Point;
 import java.io.*;
 import java.util.Vector;
@@ -35,8 +39,9 @@ import java.util.LinkedList;
 @SuppressWarnings("serial")
 public class Robot 
 {
-
-
+	public static Map<String, Token> variableMap = new HashMap<>();
+	public static Map<String, List<String>> functionMap = new HashMap<>();
+	
 	private RobotWorldDec world;
 	
 	
@@ -59,36 +64,238 @@ SKIP:
 TOKEN: /* Nombres de Comandos */
 {
 
-			<MOV:  "Mov">
-		| 	<RIGHT: "RIGHT">
-		| 	<PUT: "Put">
-		| 	<PICK: "Pick">
-		|  < POP: "Pop" >
-		|  <GO: "GO" >
-        |  < HOP:  "HOP" >		
+		 <MOVE:  "move">
+		| <NAME: "name"> 
+		| <ROBOTSKIP: "skip">
+		| <TURN: "turn">
+		| <FACE: "face">
+		| <PUT: "put" >
+		| <PICK: "pick" >
+        | <MOVEDIR: "move-dir" >
+        | <RUNDIRS: "run-dirs">
+        | <MOVEFACE: "move-face">
+        | <NULL: "null">		
 
 }
 
-TOKEN:
+TOKEN: /* Constants */
 {
-		<BALLOONS:  "BALLOONS" >
-		|	<CHIPS:     "CHIPS"  >	
+		<BALLOONS: "ballons">
+		| <CHIPS: "chips">
+		| <DIRECTION: ":left" | ":right" | ":around" | ":front" | ":back">
+		| <CARDINALPOINT: ":north" | ":south" | ":west" | ":east">
+		| <CONSTANT: "dim" | "myxpos" | "myypos" | "mychips" | "myballons" | "ballonshere" | "chipshere" | "spaces" >
 
 }
 
-
+TOKEN: /* Conditions and conditionals */
+{
+		<IF: "if">
+		| <LOOP: "loop">
+		| <REPEAT: "repeat"> 
+  		| <FACING: "facing?">
+  		| <BLOCKED: "blocked?">
+  		| <CANPUT: "can-put?">
+  		| <CANPICK: "can-pick?">
+  		| <CANMOVE: "can-move?">
+  		| <ISZERO: "isZero?">
+  		| <NOT: "not">
+}
 
 TOKEN :
 {
 		<NUM: (<DIGIT>)+ >
-		|  	<#DIGIT: ["0"-"9"] >
+		| <EQUALS: "="> 
+		| <LPAREN: "(">
+		| <RPAREN: ")">
+		| <DEFVAR: "defvar">
+		| <DEFUN: "defun">
+		| <WORD: (["a"-"z", "0"-"9"])+ >
+		| <#DIGIT: ["0"-"9"] >
+		
         
+}
+
+/* Definitions */
+void varDefinition() :
+{
+  Token token;	
+}
+{
+  <LPAREN><DEFVAR>(token = <WORD>)(<NUM>|<CONSTANT>|varCall())<RPAREN>
+  {Robot.variableMap.put(token.image, token);}
+}
+
+void procedureDefinition() :
+{
+  Token tokenFunName;
+  List<String> paramsList = new ArrayList<>();
+}
+{
+  <LPAREN><DEFUN>(tokenFunName = <WORD>){
+	Robot.functionMap.put(tokenFunName.image, paramsList);
+    }(params(tokenFunName.image))?(block())
+}
+
+void params(String funName) :
+{
+  Token tokenParamName;
+}
+{
+  <LPAREN>(tokenParamName = <WORD> {
+	Robot.functionMap.get(funName).add(tokenParamName.image);
+    })*<RPAREN>
+}
+
+/* Instructions */
+void instruction() :
+{}
+{
+  <LPAREN>(procedureCall()|command()|controlStructure())<RPAREN>
+}
+
+void block() :
+{}
+{
+  <LPAREN>(instruction())+<RPAREN>
+}
+
+void procedureCall() :
+{
+  Token funName;
+  Token paramToken;
+  List<String> paramTokens = new ArrayList<>();
+}
+{
+  (funName = <WORD>)(paramToken = <NUM> | paramToken = <CONSTANT> | paramToken = varCall()
+	{
+	  paramTokens.add(paramToken.image);
+	}
+  )*
+	{
+	  if (paramTokens.size() != Robot.functionMap.get(funName).size()) {
+		throw new ParseException("Error: los parámetros de ingreso no coinciden con los esperados.");
+	    }
+	}
+
+  
+}
+
+void command() :
+{}
+{
+  (assign()
+  |move()
+  |skip()
+  |turn()
+  |face()
+  |put()
+  |pick()
+  |moveDir()
+  |runDirs()
+  |moveFace()
+  |nullCommand()
+  )
+  
+}
+
+void controlStructure() :
+{}
+{
+  (conditional()|repeat()|repeatTimes())
+}
+
+void repeat() :
+{}
+{
+  <LOOP>condition()(command()|block())
+}
+
+void repeatTimes() :
+{}
+{
+  <REPEAT>(<NUM>|<CONSTANT>|varCall())(command()|block())
+}
+
+void conditional() :
+{}
+{
+  <IF>(condition())(command()|block())(command()|block())
+}
+
+void condition() :
+{}
+{
+  <LPAREN>(facingCondition()
+  |blockedCondition()
+  |canputCondition()
+  |canpickCondition()
+  |canmoveCondition()
+  |iszeroCondition()
+  |notCondition())
+  <RPAREN>
+}
+
+void facingCondition() :
+{}
+{
+  <FACING><CARDINALPOINT>
+}
+
+void blockedCondition() :
+{}
+{
+  <BLOCKED>
+}
+
+void canputCondition() :
+{}
+{
+  <CANPUT>(<CHIPS>|<BALLOONS>)(<NUM>|<CONSTANT>|varCall())
+}
+
+void canpickCondition() :
+{}
+{
+  <CANPICK>(<CHIPS>|<BALLOONS>)(<NUM>|<CONSTANT>|varCall())
+}
+
+void canmoveCondition() :
+{}
+{
+ <CANMOVE><CARDINALPOINT> 
+}
+
+void iszeroCondition() :
+{}
+{
+  <ISZERO>(<NUM>|<CONSTANT>|varCall())
+}
+
+void notCondition() :
+{}
+{
+  <NOT>condition()
 }
 
 
 
+Token varCall() throws ParseException :
+{
+	Token token;
+}
+{
+  token = <WORD>
+  {
+    if (!Robot.variableMap.containsKey(token.image)) {
+		throw new ParseException("Error: la variable '" + token.image + "' no está definida.");
+    }
+    return token;
+  }
+}
+
 	//boolean command(uniandes.lym.robot.view.Console sistema) :
-	boolean command(Console sistema):
+/*	boolean command(Console sistema):
 	{	
 		
 		int x,y;
@@ -143,7 +350,7 @@ TOKEN :
 
 	
 	
-
+*/
 	/**
 	 * Unsigned decimal number
 	 * @return the corresponding value of the string

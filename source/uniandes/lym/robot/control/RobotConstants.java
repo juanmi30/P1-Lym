@@ -11,27 +11,73 @@ public interface RobotConstants {
   /** End of File. */
   int EOF = 0;
   /** RegularExpression Id. */
-  int MOV = 5;
+  int MOVE = 5;
   /** RegularExpression Id. */
-  int RIGHT = 6;
+  int NAME = 6;
   /** RegularExpression Id. */
-  int PUT = 7;
+  int ROBOTSKIP = 7;
   /** RegularExpression Id. */
-  int PICK = 8;
+  int TURN = 8;
   /** RegularExpression Id. */
-  int POP = 9;
+  int FACE = 9;
   /** RegularExpression Id. */
-  int GO = 10;
+  int PUT = 10;
   /** RegularExpression Id. */
-  int HOP = 11;
+  int PICK = 11;
   /** RegularExpression Id. */
-  int BALLOONS = 12;
+  int MOVEDIR = 12;
   /** RegularExpression Id. */
-  int CHIPS = 13;
+  int RUNDIRS = 13;
   /** RegularExpression Id. */
-  int NUM = 14;
+  int MOVEFACE = 14;
   /** RegularExpression Id. */
-  int DIGIT = 15;
+  int NULL = 15;
+  /** RegularExpression Id. */
+  int BALLOONS = 16;
+  /** RegularExpression Id. */
+  int CHIPS = 17;
+  /** RegularExpression Id. */
+  int DIRECTION = 18;
+  /** RegularExpression Id. */
+  int CARDINALPOINT = 19;
+  /** RegularExpression Id. */
+  int CONSTANT = 20;
+  /** RegularExpression Id. */
+  int IF = 21;
+  /** RegularExpression Id. */
+  int LOOP = 22;
+  /** RegularExpression Id. */
+  int REPEAT = 23;
+  /** RegularExpression Id. */
+  int FACING = 24;
+  /** RegularExpression Id. */
+  int BLOCKED = 25;
+  /** RegularExpression Id. */
+  int CANPUT = 26;
+  /** RegularExpression Id. */
+  int CANPICK = 27;
+  /** RegularExpression Id. */
+  int CANMOVE = 28;
+  /** RegularExpression Id. */
+  int ISZERO = 29;
+  /** RegularExpression Id. */
+  int NOT = 30;
+  /** RegularExpression Id. */
+  int NUM = 31;
+  /** RegularExpression Id. */
+  int EQUALS = 32;
+  /** RegularExpression Id. */
+  int LPAREN = 33;
+  /** RegularExpression Id. */
+  int RPAREN = 34;
+  /** RegularExpression Id. */
+  int DEFVAR = 35;
+  /** RegularExpression Id. */
+  int DEFUN = 36;
+  /** RegularExpression Id. */
+  int WORD = 37;
+  /** RegularExpression Id. */
+  int DIGIT = 38;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -43,21 +89,40 @@ public interface RobotConstants {
     "\"\\r\"",
     "\"\\t\"",
     "\"\\n\"",
-    "\"Mov\"",
-    "\"RIGHT\"",
-    "\"Put\"",
-    "\"Pick\"",
-    "\"Pop\"",
-    "\"GO\"",
-    "\"HOP\"",
-    "\"BALLOONS\"",
-    "\"CHIPS\"",
+    "\"move\"",
+    "\"name\"",
+    "\"skip\"",
+    "\"turn\"",
+    "\"face\"",
+    "\"put\"",
+    "\"pick\"",
+    "\"move-dir\"",
+    "\"run-dirs\"",
+    "\"move-face\"",
+    "\"null\"",
+    "\"ballons\"",
+    "\"chips\"",
+    "<DIRECTION>",
+    "<CARDINALPOINT>",
+    "<CONSTANT>",
+    "\"if\"",
+    "\"loop\"",
+    "\"repeat\"",
+    "\"facing?\"",
+    "\"blocked?\"",
+    "\"can-put?\"",
+    "\"can-pick?\"",
+    "\"can-move?\"",
+    "\"isZero?\"",
+    "\"not\"",
     "<NUM>",
-    "<DIGIT>",
+    "\"=\"",
     "\"(\"",
     "\")\"",
-    "\",\"",
-    "\";\"",
+    "\"defvar\"",
+    "\"defun\"",
+    "<WORD>",
+    "<DIGIT>",
   };
 
 }
