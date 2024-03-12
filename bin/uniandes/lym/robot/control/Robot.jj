@@ -401,12 +401,49 @@ Token varCall():
 }
 //TODO: No creo que sea necesario retornar el token porque al hacer <WORD> el global se actualiza automáticamente
 
-int value():
-{}
+int value() throws Error:
+{int value = -1;}
 {
-  (<NUM>{return Integer.parseInt(token.image);}|<CONSTANT>|varCall(){return Integer.parseInt(Robot.variableMap.get(token.image).image);})
- //TODO: Toca definir los valores numéricos de las constantes
+  (<NUM>
+  {
+    try
+    {
+      value = Integer.parseInt(token.image);
+    }
+   	catch (NumberFormatException ee) 
+		{
+			throw new Error("Hay overflow con el valor: "+token.image);
+		}
+	return value;
+  }
+  |<CONSTANT>
+  {
+    String image = token.image;
+  	if (image.equals("dim")) { value = world.getN(); }
+  	else if (image.equals("myxpos")) { value = (int) world.getPosition().getX(); }
+  	else if (image.equals("myypos")) { value = (int) world.getPosition().getY(); }
+  	else if (image.equals("mychips")) { value = world.getMyChips(); }
+  	else if (image.equals("myballons")) { value = world.getMyBalloons(); }
+  	else if (image.equals("ballonshere")) { value = world.countBalloons(); }
+	else if (image.equals("chipshere")) { value = world.chipsToPick(); }
+  	else if (image.equals("spaces")) { value = world.freeSpacesForChips(); }
+  
+	return value;
+  }
+  |varCall()
+  {
+    try
+    {
+      value = Integer.parseInt(Robot.variableMap.get(token.image).image);
+    }
+   	catch (NumberFormatException ee) 
+		{
+			throw new Error("Hay overflow con el valor: "+token.image);
+		}
+	return value;
+  })
 }
+
 //value() retorna el valor numérico para usarlo con los métodos de world
 
 void direction():
@@ -467,30 +504,3 @@ boolean command(Console sistema):
 //	|  	  ( <BALLOONS>   "," f=num() {world.grabBalloons(f);salida="Command:  Pick balloons";})	 
 //
 //}
-
-/**
- * Unsigned decimal number
- * @return the corresponding value of the string
- * @error  corresponding value is too large
- */
-
-int num() throws Error:
-{	
-	int total=1;
-}
-{
-	<NUM>
-	{
-		try 
-		{
-			total = Integer.parseInt(token.image);
-		} 
-		catch (NumberFormatException ee) 
-		{
-			throw new Error("Number out of bounds: "+token.image+" !!");
-		}
-		return total;
-	}
-}
-
-	

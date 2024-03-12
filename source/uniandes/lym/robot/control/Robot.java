@@ -562,20 +562,47 @@ if (!Robot.variableMap.containsKey(token.image)) {
 
 //TODO: No creo que sea necesario retornar el token porque al hacer <WORD> el global se actualiza automáticamente
   final public 
-int value() throws ParseException {
+int value() throws ParseException, Error {int value = -1;
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case NUM:{
       jj_consume_token(NUM);
-{if ("" != null) return Integer.parseInt(token.image);}
+try
+    {
+      value = Integer.parseInt(token.image);
+    }
+        catch (NumberFormatException ee)
+                {
+                        {if (true) throw new Error("Hay overflow con el valor: "+token.image);}
+                }
+        {if ("" != null) return value;}
       break;
       }
     case CONSTANT:{
       jj_consume_token(CONSTANT);
+String image = token.image;
+        if (image.equals("dim")) { value = world.getN(); }
+        else if (image.equals("myxpos")) { value = (int) world.getPosition().getX(); }
+        else if (image.equals("myypos")) { value = (int) world.getPosition().getY(); }
+        else if (image.equals("mychips")) { value = world.getMyChips(); }
+        else if (image.equals("myballons")) { value = world.getMyBalloons(); }
+        else if (image.equals("ballonshere")) { value = world.countBalloons(); }
+        else if (image.equals("chipshere")) { value = world.chipsToPick(); }
+        else if (image.equals("spaces")) { value = world.freeSpacesForChips(); }
+
+        {if ("" != null) return value;}
       break;
       }
     case WORD:{
       varCall();
-{if ("" != null) return Integer.parseInt(Robot.variableMap.get(token.image).image);}
+try
+    {
+      value = Integer.parseInt(Robot.variableMap.get(token.image).image);
+    }
+        catch (NumberFormatException ee)
+                {
+                        {if (true) throw new Error("Hay overflow con el valor: "+token.image);}
+                }
+        {if ("" != null) return value;}
       break;
       }
     default:
@@ -669,46 +696,6 @@ try {
       jj_consume_token(-1);
       throw new ParseException();
     }
-    throw new Error("Missing return statement in function");
-}
-
-//void put() :
-//{
-//	int f=1;	
-//}
-//{
-//	( <CHIPS>    "," f=num() {world.putChips(f); salida = "Command:  Put Chips"; })
-//	|  	  ( <BALLOONS>   "," f=num() {world.putBalloons(f); salida = "Command:  Put Balloons";})	 
-//
-//}
-//
-//void get() :
-//{
-//	int f=1;	
-//}
-//{
-//	( <CHIPS>   "," f=num() {world.pickChips(f);salida = "Command:  Pick chips";})
-//	|  	  ( <BALLOONS>   "," f=num() {world.grabBalloons(f);salida="Command:  Pick balloons";})	 
-//
-//}
-
-/**
- * Unsigned decimal number
- * @return the corresponding value of the string
- * @error  corresponding value is too large
- */
-  final public 
-int num() throws ParseException, Error {int total=1;
-    jj_consume_token(NUM);
-try
-                {
-                        total = Integer.parseInt(token.image);
-                }
-                catch (NumberFormatException ee)
-                {
-                        {if (true) throw new Error("Number out of bounds: "+token.image+" !!");}
-                }
-                {if ("" != null) return total;}
     throw new Error("Missing return statement in function");
 }
 
