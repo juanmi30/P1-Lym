@@ -19,6 +19,7 @@ public class Robot implements RobotConstants {
         public static Map<String, Token> variableMap = new HashMap<>();
         public static Map<String, List<String>> functionMap = new HashMap<>();
         public static Map<String, String> paramFunctionMap = new HashMap<>();
+        public static String salida = new String();
 
         private RobotWorldDec world;
 
@@ -26,8 +27,6 @@ public class Robot implements RobotConstants {
         void setWorld(RobotWorld w) {
                 world = (RobotWorldDec) w;
         }
-
-        String salida=new String();
 
 /*Variable and Procedure Definitions*/
   final public void varDefinition() throws ParseException {Token token;
@@ -250,14 +249,14 @@ variableName = token.image;
     }
     value();
 Robot.variableMap.put(variableName, token);
+    Robot.salida = "Command: variable assignment";
 }
 
-//TODO: Incluir declaración salida
-  final public 
-void move() throws ParseException {int numberSteps;
+  final public void move() throws ParseException {int numberSteps;
     jj_consume_token(MOVE);
     numberSteps = value();
 world.moveForward(numberSteps, false);
+    Robot.salida = "Command: move";
 }
 
   final public void skip() throws ParseException {
@@ -285,11 +284,10 @@ direction = token.image;
             default:
                 {if (true) throw new ParseException("Error: la direcci\u00c3\u00b3n " + token.image + " no es v\u00c3\u00a1lida con el comando turn.");}
         }
+        Robot.salida = "Command: turn";
 }
 
-//TODO: Incluir declaración salida
-  final public 
-void face() throws ParseException {
+  final public void face() throws ParseException {
     jj_consume_token(FACE);
     jj_consume_token(ORIENTATION);
 }
@@ -623,13 +621,7 @@ if (!(token.image.equals(":front") || token.image.equals(":right") || token.imag
 }
 
 //Initial Rule
-  final public boolean command(Console sistema) throws ParseException {int x,y;
-        salida = new String();
-        String orientation = new String();
-        String variable = new String();
-//	boolean notTrigger = false;
-//	boolean condState = false;	
-
+  final public boolean command(Console sistema) throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case LPAREN:{
       label_5:
@@ -673,6 +665,7 @@ try {
                                 System.err.format("IOException: %s%n", e);
                     }
 
+                sistema.printOutput(salida);
                 {if ("" != null) return true;}
         switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
         case LPAREN:{

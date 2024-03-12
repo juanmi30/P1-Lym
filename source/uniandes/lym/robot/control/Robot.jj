@@ -40,6 +40,7 @@ public class Robot
 	public static Map<String, Token> variableMap = new HashMap<>();
 	public static Map<String, List<String>> functionMap = new HashMap<>();
 	public static Map<String, String> paramFunctionMap = new HashMap<>();
+	public static String salida = new String();
 	
 	private RobotWorldDec world;
 	
@@ -47,8 +48,6 @@ public class Robot
 	void setWorld(RobotWorld w) {
 		world = (RobotWorldDec) w;	
 	}
-
-	String salida=new String();
 }
 PARSER_END(Robot)
 
@@ -215,9 +214,9 @@ void assign():
   value()
   {
     Robot.variableMap.put(variableName, token);
+    Robot.salida = "Command: variable assignment";
   }
 }
-//TODO: Incluir declaración salida
 
 void move():
 {int numberSteps;}
@@ -225,6 +224,7 @@ void move():
   < MOVE >numberSteps=value()
   {
     world.moveForward(numberSteps, false);
+    Robot.salida = "Command: move";
   }
 }
 
@@ -256,9 +256,9 @@ void turn():
 	    default:
 	        throw new ParseException("Error: la dirección " + token.image + " no es válida con el comando turn.");
 	}
+	Robot.salida = "Command: turn";
   }
 }
-//TODO: Incluir declaración salida
 
 void face():
 {}
@@ -460,16 +460,7 @@ void direction():
 
 //Initial Rule
 boolean command(Console sistema):
-{	
-	int x,y;
-	salida = new String();
-	String orientation = new String();
-	String variable = new String();
-//	boolean notTrigger = false;
-//	boolean condState = false;	
-}
-
-
+{}
 {
 	(<LPAREN>(varDefinition()|procedureDefinition()|instruction()) 
 	{
@@ -479,6 +470,7 @@ boolean command(Console sistema):
     			        System.err.format("IOException: %s%n", e);
     		    }
 
+		sistema.printOutput(salida);
 		return true;
 	})+
 
