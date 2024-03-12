@@ -11,35 +11,35 @@ public interface RobotConstants {
   /** End of File. */
   int EOF = 0;
   /** RegularExpression Id. */
-  int MOVE = 5;
+  int ASSIGN = 5;
   /** RegularExpression Id. */
-  int NAME = 6;
+  int MOVE = 6;
   /** RegularExpression Id. */
-  int ROBOTSKIP = 7;
+  int NAME = 7;
   /** RegularExpression Id. */
-  int TURN = 8;
+  int ROBOTSKIP = 8;
   /** RegularExpression Id. */
-  int FACE = 9;
+  int TURN = 9;
   /** RegularExpression Id. */
-  int PUT = 10;
+  int FACE = 10;
   /** RegularExpression Id. */
-  int PICK = 11;
+  int PUT = 11;
   /** RegularExpression Id. */
-  int MOVEDIR = 12;
+  int PICK = 12;
   /** RegularExpression Id. */
-  int RUNDIRS = 13;
+  int MOVEDIR = 13;
   /** RegularExpression Id. */
-  int MOVEFACE = 14;
+  int RUNDIRS = 14;
   /** RegularExpression Id. */
-  int NULL = 15;
+  int MOVEFACE = 15;
   /** RegularExpression Id. */
-  int BALLOONS = 16;
+  int NULL = 16;
   /** RegularExpression Id. */
-  int CHIPS = 17;
+  int ITEM = 17;
   /** RegularExpression Id. */
   int DIRECTION = 18;
   /** RegularExpression Id. */
-  int CARDINALPOINT = 19;
+  int ORIENTATION = 19;
   /** RegularExpression Id. */
   int CONSTANT = 20;
   /** RegularExpression Id. */
@@ -65,19 +65,17 @@ public interface RobotConstants {
   /** RegularExpression Id. */
   int NUM = 31;
   /** RegularExpression Id. */
-  int EQUALS = 32;
+  int LPAREN = 32;
   /** RegularExpression Id. */
-  int LPAREN = 33;
+  int RPAREN = 33;
   /** RegularExpression Id. */
-  int RPAREN = 34;
+  int DEFVAR = 34;
   /** RegularExpression Id. */
-  int DEFVAR = 35;
+  int DEFUN = 35;
   /** RegularExpression Id. */
-  int DEFUN = 36;
+  int WORD = 36;
   /** RegularExpression Id. */
-  int WORD = 37;
-  /** RegularExpression Id. */
-  int DIGIT = 38;
+  int DIGIT = 37;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -89,6 +87,7 @@ public interface RobotConstants {
     "\"\\r\"",
     "\"\\t\"",
     "\"\\n\"",
+    "\"=\"",
     "\"move\"",
     "\"name\"",
     "\"skip\"",
@@ -100,10 +99,9 @@ public interface RobotConstants {
     "\"run-dirs\"",
     "\"move-face\"",
     "\"null\"",
-    "\"ballons\"",
-    "\"chips\"",
+    "<ITEM>",
     "<DIRECTION>",
-    "<CARDINALPOINT>",
+    "<ORIENTATION>",
     "<CONSTANT>",
     "\"if\"",
     "\"loop\"",
@@ -116,7 +114,6 @@ public interface RobotConstants {
     "\"isZero?\"",
     "\"not\"",
     "<NUM>",
-    "\"=\"",
     "\"(\"",
     "\")\"",
     "\"defvar\"",

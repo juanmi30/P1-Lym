@@ -5,9 +5,7 @@ Modificado por: Silvia Takahashi
 Modificado por: Juan Pablo Morales.
 Agregadas producciones para manejar globos
 Modificado por Silvia Takahashi
-
-
- **/
+**/
 
 
 options 
@@ -41,6 +39,7 @@ public class Robot
 {
 	public static Map<String, Token> variableMap = new HashMap<>();
 	public static Map<String, List<String>> functionMap = new HashMap<>();
+	public static Map<String, String> paramFunctionMap = new HashMap<>();
 	
 	private RobotWorldDec world;
 	
@@ -61,68 +60,64 @@ SKIP:
 	| "\n"
 }
 
-TOKEN: /* Nombres de Comandos */
+TOKEN: /*Commands*/
 {
-
-		 <MOVE:  "move">
-		| <NAME: "name"> 
-		| <ROBOTSKIP: "skip">
-		| <TURN: "turn">
-		| <FACE: "face">
-		| <PUT: "put" >
-		| <PICK: "pick" >
-        | <MOVEDIR: "move-dir" >
-        | <RUNDIRS: "run-dirs">
-        | <MOVEFACE: "move-face">
-        | <NULL: "null">		
+	 <ASSIGN: "=">
+	| <MOVE:  "move">
+	| <NAME: "name"> 
+	| <ROBOTSKIP: "skip">
+	| <TURN: "turn">
+	| <FACE: "face">
+	| <PUT: "put" >
+	| <PICK: "pick" >
+	| <MOVEDIR: "move-dir" >
+	| <RUNDIRS: "run-dirs">
+	| <MOVEFACE: "move-face">
+	| <NULL: "null">		
 
 }
 
-TOKEN: /* Constants */
+TOKEN: /*Constants*/
 {
-		<BALLOONS: "ballons">
-		| <CHIPS: "chips">
-		| <DIRECTION: ":left" | ":right" | ":around" | ":front" | ":back">
-		| <CARDINALPOINT: ":north" | ":south" | ":west" | ":east">
-		| <CONSTANT: "dim" | "myxpos" | "myypos" | "mychips" | "myballons" | "ballonshere" | "chipshere" | "spaces" >
+	<ITEM: ":ballons" | ":chips" >
+	| <DIRECTION: ":left" | ":right" | ":around" | ":front" | ":back">
+	| <ORIENTATION: ":north" | ":south" | ":west" | ":east">
+	| <CONSTANT: "dim" | "myxpos" | "myypos" | "mychips" | "myballons" | "ballonshere" | "chipshere" | "spaces" >
 
 }
 
-TOKEN: /* Conditions and conditionals */
+TOKEN: /*Conditions and Conditionals*/
 {
-		<IF: "if">
-		| <LOOP: "loop">
-		| <REPEAT: "repeat"> 
-  		| <FACING: "facing?">
-  		| <BLOCKED: "blocked?">
-  		| <CANPUT: "can-put?">
-  		| <CANPICK: "can-pick?">
-  		| <CANMOVE: "can-move?">
-  		| <ISZERO: "isZero?">
-  		| <NOT: "not">
+	<IF: "if">
+	| <LOOP: "loop">
+	| <REPEAT: "repeat"> 
+	| <FACING: "facing?">
+	| <BLOCKED: "blocked?">
+	| <CANPUT: "can-put?">
+	| <CANPICK: "can-pick?">
+	| <CANMOVE: "can-move?">
+	| <ISZERO: "isZero?">
+	| <NOT: "not">
 }
 
-TOKEN :
+TOKEN : /*Additional Tokens*/
 {
-		<NUM: (<DIGIT>)+ >
-		| <EQUALS: "="> 
-		| <LPAREN: "(">
-		| <RPAREN: ")">
-		| <DEFVAR: "defvar">
-		| <DEFUN: "defun">
-		| <WORD: (["a"-"z", "0"-"9"])+ >
-		| <#DIGIT: ["0"-"9"] >
-		
-        
+	<NUM: (<DIGIT>)+ > 
+	| <LPAREN: "(">
+	| <RPAREN: ")">
+	| <DEFVAR: "defvar">
+	| <DEFUN: "defun">
+	| <WORD: (["a"-"z", "0"-"9"])+ >
+	| <#DIGIT: ["0"-"9"] >   
 }
 
-/* Definitions */
+/*Variable and Procedure Definitions*/
 void varDefinition() :
 {
   Token token;	
 }
 {
-  <LPAREN><DEFVAR>(token = <WORD>)(<NUM>|<CONSTANT>|varCall())<RPAREN>
+  <DEFVAR>(token = <WORD>)value()<RPAREN>
   {Robot.variableMap.put(token.image, token);}
 }
 
@@ -132,9 +127,13 @@ void procedureDefinition() :
   List<String> paramsList = new ArrayList<>();
 }
 {
-  <LPAREN><DEFUN>(tokenFunName = <WORD>){
+  <DEFUN>(tokenFunName = <WORD>){
 	Robot.functionMap.put(tokenFunName.image, paramsList);
     }(params(tokenFunName.image))?(block())<RPAREN>
+//TODO: Tanto params como block empiezan por LPAREN, arreglar warning
+    {
+      Robot.paramFunctionMap.clear();
+    }
 }
 
 void params(String funName) :
@@ -144,14 +143,15 @@ void params(String funName) :
 {
   <LPAREN>(tokenParamName = <WORD> {
 	Robot.functionMap.get(funName).add(tokenParamName.image);
+	Robot.paramFunctionMap.put(tokenParamName.image, funName);
     })*<RPAREN>
 }
 
-/* Instructions */
+/*Instructions*/
 void instruction() :
 {}
 {
-  <LPAREN>(procedureCall()|command()|controlStructure())<RPAREN>
+  (procedureCall()|parseCommand()|controlStructure())<RPAREN>
 }
 
 void block() :
@@ -175,13 +175,13 @@ void procedureCall() :
 	{
 	  if (paramTokens.size() != Robot.functionMap.get(funName).size()) {
 		throw new ParseException("Error: los parámetros de ingreso no coinciden con los esperados.");
-	    }
+	    }	
 	}
 
   
 }
 
-void command() :
+void parseCommand() :
 {}
 {
   (assign()
@@ -199,6 +199,110 @@ void command() :
   
 }
 
+/*Commands*/
+void assign():
+{String variableName;}
+{
+  < ASSIGN >< WORD >
+  //No se llama varCall() porque permitiría que se hiciera assign sobre el parámetro de una función
+  {
+    variableName = token.image;
+    if (!Robot.variableMap.containsKey(variableName))
+    {
+      throw new ParseException("Error: La variable " + variableName + " no está definida.");
+    }
+  }
+  value()
+  {
+    Robot.variableMap.put(variableName, token);
+  }
+}
+//TODO: Incluir declaración salida
+
+void move():
+{int numberSteps;}
+{
+  < MOVE >numberSteps=value()
+  {
+    world.moveForward(numberSteps, false);
+  }
+}
+
+void skip():
+{}
+{
+  < ROBOTSKIP >value()
+}
+
+void turn():
+{String direction;}
+{
+  < TURN >< DIRECTION >
+  {
+    direction = token.image;
+	switch(direction) {
+	    case ":left":
+	        world.turnRight();
+	        world.turnRight();
+	        world.turnRight();
+	        break;
+	    case ":right":
+	        world.turnRight();
+	        break;
+	    case ":around":
+	        world.turnRight();
+	        world.turnRight();
+	        break;
+	    default:
+	        throw new ParseException("Error: la dirección " + token.image + " no es válida con el comando turn.");
+	}
+  }
+}
+//TODO: Incluir declaración salida
+
+void face():
+{}
+{
+  < FACE >< ORIENTATION >
+}
+
+void put():
+{}
+{
+  < PUT >< ITEM >value()
+}
+
+void pick():
+{}
+{
+  < PICK >< ITEM >value()
+}
+
+void moveDir():
+{}
+{
+  < MOVEDIR >value()direction()
+}
+
+void runDirs():
+{}
+{
+  < RUNDIRS >(direction())+
+}
+
+void moveFace():
+{}
+{
+  < MOVEFACE >value()< ORIENTATION >
+}
+
+void nullCommand():
+{}
+{
+  < NULL >
+}
+
+/*Control Structures*/
 void controlStructure() :
 {}
 {
@@ -208,19 +312,20 @@ void controlStructure() :
 void repeat() :
 {}
 {
-  <LOOP>condition()(command()|block())
+  <LOOP>condition()(parseCommand()|block())
 }
 
 void repeatTimes() :
 {}
 {
-  <REPEAT>(<NUM>|<CONSTANT>|varCall())(command()|block())
+  <REPEAT>value()(parseCommand()|block())
 }
 
+/*Conditionals*/
 void conditional() :
 {}
 {
-  <IF>(condition())(command()|block())(command()|block())
+  <IF>(condition())(parseCommand()|block())(parseCommand()|block())
 }
 
 void condition() :
@@ -239,7 +344,7 @@ void condition() :
 void facingCondition() :
 {}
 {
-  <FACING><CARDINALPOINT>
+  <FACING><ORIENTATION>
 }
 
 void blockedCondition() :
@@ -251,25 +356,25 @@ void blockedCondition() :
 void canputCondition() :
 {}
 {
-  <CANPUT>(<CHIPS>|<BALLOONS>)(<NUM>|<CONSTANT>|varCall())
+  <CANPUT><ITEM>value()
 }
 
 void canpickCondition() :
 {}
 {
-  <CANPICK>(<CHIPS>|<BALLOONS>)(<NUM>|<CONSTANT>|varCall())
+  <CANPICK><ITEM>value()
 }
 
 void canmoveCondition() :
 {}
 {
- <CANMOVE><CARDINALPOINT> 
+ <CANMOVE><ORIENTATION> 
 }
 
 void iszeroCondition() :
 {}
 {
-  <ISZERO>(<NUM>|<CONSTANT>|varCall())
+  <ISZERO>value()
 }
 
 void notCondition() :
@@ -278,9 +383,8 @@ void notCondition() :
   <NOT>condition()
 }
 
-
-
-Token varCall() throws ParseException :
+/* Auxiliary Functions*/
+Token varCall():
 {
 	Token token;
 }
@@ -288,92 +392,105 @@ Token varCall() throws ParseException :
   token = <WORD>
   {
     if (!Robot.variableMap.containsKey(token.image)) {
-		throw new ParseException("Error: la variable '" + token.image + "' no está definida.");
+		if (!Robot.paramFunctionMap.containsKey(token.image)) {
+			throw new ParseException("Error: La variable " + token.image + " no está definida.");
+        }
     }
     return token;
   }
 }
+//TODO: No creo que sea necesario retornar el token porque al hacer <WORD> el global se actualiza automáticamente
 
-	//boolean command(uniandes.lym.robot.view.Console sistema) :
-/*	boolean command(Console sistema):
-	{	
-		
-		int x,y;
-		salida=new String();	
-	}
+int value():
+{}
+{
+  (<NUM>{return Integer.parseInt(token.image);}|<CONSTANT>|varCall(){return Integer.parseInt(Robot.variableMap.get(token.image).image);})
+ //TODO: Toca definir los valores numéricos de las constantes
+}
+//value() retorna el valor numérico para usarlo con los métodos de world
 
-	
+void direction():
+{
+}
+{
+  < DIRECTION >
+  {
+    if (!(token.image.equals(":front") || token.image.equals(":right") || token.image.equals(":left") || token.image.equals(":back"))) {
+		throw new ParseException("Error: la dirección " + token.image + " no es válida con el comando move-dir o run-dirs.");
+    }
+  }
+}
+
+//Initial Rule
+boolean command(Console sistema):
+{	
+	int x,y;
+	salida = new String();
+	String orientation = new String();
+	String variable = new String();
+//	boolean notTrigger = false;
+//	boolean condState = false;	
+}
+
+
+{
+	(<LPAREN>(varDefinition()|procedureDefinition()|instruction()) 
 	{
-		(		  (
-		   <RIGHT> "(" ")" {world.turnRight();salida = "Command: Turnright";}
-		| 	<MOV>  "(" x=num() ")" {world.moveForward(x,false);salida = "Command: Moveforward ";}  
-		| 	<HOP>  "(" x=num() ")" {world.moveForward(x,true);salida = "Command:Jumpforward ";}
-		| 	<GO>  "(" x=num() "," y=num()")" {world.setPostion(x,y);salida = "Command:GO ";}  
-		|  <PUT> "("  put() ")"					  			
-		|  <PICK> "(" get()  ")"	
-	    |  < POP > "(" x=num() ")" {world.popBalloons(x); salida = "Comando:  Pop";}
-		) ";" 
+	    try {
+    			 Thread.sleep(900);
+    	    } catch (InterruptedException e) {
+    			        System.err.format("IOException: %s%n", e);
+    		    }
 
+		return true;
+	})+
+
+	| <EOF> {return false;} 
+}
+
+//void put() :
+//{
+//	int f=1;	
+//}
+//{
+//	( <CHIPS>    "," f=num() {world.putChips(f); salida = "Command:  Put Chips"; })
+//	|  	  ( <BALLOONS>   "," f=num() {world.putBalloons(f); salida = "Command:  Put Balloons";})	 
+//
+//}
+//
+//void get() :
+//{
+//	int f=1;	
+//}
+//{
+//	( <CHIPS>   "," f=num() {world.pickChips(f);salida = "Command:  Pick chips";})
+//	|  	  ( <BALLOONS>   "," f=num() {world.grabBalloons(f);salida="Command:  Pick balloons";})	 
+//
+//}
+
+/**
+ * Unsigned decimal number
+ * @return the corresponding value of the string
+ * @error  corresponding value is too large
+ */
+
+int num() throws Error:
+{	
+	int total=1;
+}
+{
+	<NUM>
+	{
+		try 
 		{
-		    try {
-	    			 Thread.sleep(900);
-	    	    } catch (InterruptedException e) {
-	    			        System.err.format("IOException: %s%n", e);
-	    		    }
-	    			 
-			sistema.printOutput(salida);
-			return true;
-		})+
-
-    	| <EOF> {return false;} 
-	}
-
-	void put() :
-	{
-		int f=1;	
-	}
-	{
-		( <CHIPS>    "," f=num() {world.putChips(f); salida = "Command:  Put Chips"; })
-		|  	  ( <BALLOONS>   "," f=num() {world.putBalloons(f); salida = "Command:  Put Balloons";})	 
-
-	}
-
-	void get() :
-	{
-		int f=1;	
-	}
-	{
-		( <CHIPS>   "," f=num() {world.pickChips(f);salida = "Command:  Pick chips";})
-		|  	  ( <BALLOONS>   "," f=num() {world.grabBalloons(f);salida="Command:  Pick balloons";})	 
-
-	}
-
-	
-	
-*/
-	/**
-	 * Unsigned decimal number
-	 * @return the corresponding value of the string
-	 * @error  corresponding value is too large
-	 */
-
-	int num() throws Error:
-	{	
-		int total=1;
-	}
-	{
-		<NUM>
+			total = Integer.parseInt(token.image);
+		} 
+		catch (NumberFormatException ee) 
 		{
-			try 
-			{
-				total = Integer.parseInt(token.image);
-			} 
-			catch (NumberFormatException ee) 
-			{
-				throw new Error("Number out of bounds: "+token.image+" !!");
-			}
-			return total;
+			throw new Error("Number out of bounds: "+token.image+" !!");
 		}
+		return total;
 	}
+}
 
 	
