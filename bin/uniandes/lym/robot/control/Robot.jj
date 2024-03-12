@@ -37,7 +37,7 @@ import java.util.LinkedList;
 @SuppressWarnings("serial")
 public class Robot 
 {
-	public static Map<String, Token> variableMap = new HashMap<>();
+	public static Map<String, Integer> variableMap = new HashMap<>();
 	public static Map<String, List<String>> functionMap = new HashMap<>();
 	public static Map<String, String> paramFunctionMap = new HashMap<>();
 	public static String salida = new String();
@@ -113,11 +113,13 @@ TOKEN : /*Additional Tokens*/
 /*Variable and Procedure Definitions*/
 void varDefinition() :
 {
-  Token token;	
+  Token variableName;
+  int variableValue;
+  
 }
 {
-  <DEFVAR>(token = <WORD>)value()<RPAREN>
-  {Robot.variableMap.put(token.image, token);}
+  <DEFVAR>(variableName = <WORD>)variableValue = value()<RPAREN>
+  {Robot.variableMap.put(variableName.image, variableValue);}
 }
 
 void procedureDefinition() :
@@ -162,13 +164,13 @@ void block() :
 void procedureCall() :
 {
   Token funName;
-  Token paramToken;
   List<String> paramTokens = new ArrayList<>();
 }
 {
-  (funName = <WORD>)(paramToken = <NUM> | paramToken = <CONSTANT> | paramToken = varCall()
+  (funName = <WORD>)(<NUM> | <CONSTANT> | varCall() //Cambié que no se retornara token en varCall(), pero esto debería funcionar porque
+  													//al leer el token en varCall() se actualiza la global token
 	{
-	  paramTokens.add(paramToken.image);
+	  paramTokens.add(token.image);
 	}
   )*
 	{
@@ -200,7 +202,10 @@ void parseCommand() :
 
 /*Commands*/
 void assign():
-{String variableName;}
+{
+  String variableName;
+  int variableValue;
+}
 {
   < ASSIGN >< WORD >
   //No se llama varCall() porque permitiría que se hiciera assign sobre el parámetro de una función
@@ -211,9 +216,9 @@ void assign():
       throw new ParseException("Error: La variable " + variableName + " no está definida.");
     }
   }
-  value()
+  variableValue = value()
   {
-    Robot.variableMap.put(variableName, token);
+    Robot.variableMap.put(variableName, variableValue);
     Robot.salida = "Command: variable assignment";
   }
 }
@@ -223,8 +228,11 @@ void move():
 {
   < MOVE >numberSteps=value()
   {
-    world.moveForward(numberSteps, false);
-    Robot.salida = "Command: move";
+    if (numberSteps != -1)
+    {
+      world.moveForward(numberSteps, false);
+      Robot.salida = "Command: move";
+    }
   }
 }
 
@@ -384,22 +392,35 @@ void notCondition() :
 }
 
 /* Auxiliary Functions*/
-Token varCall():
+int varCall():
 {
-	Token token;
+	int value = -1;
 }
 {
-  token = <WORD>
+  <WORD>
   {
+    if (Robot.variableMap.containsKey(token.image))
+    {
+      try
+      {
+        value = Robot.variableMap.get(token.image);
+      }
+      catch (NumberFormatException ee)
+      {
+        throw new Error("Hay overflow con el valor: "+value);
+      }
+
+      return value;
+    }
     if (!Robot.variableMap.containsKey(token.image)) {
 		if (!Robot.paramFunctionMap.containsKey(token.image)) {
 			throw new ParseException("Error: La variable " + token.image + " no está definida.");
         }
     }
-    return token;
+    
+    return value; //Si se retorna -1 significa que el varCall() corresponde al parámetros de una función
   }
 }
-//TODO: No creo que sea necesario retornar el token porque al hacer <WORD> el global se actualiza automáticamente
 
 int value() throws Error:
 {int value = -1;}
@@ -430,18 +451,8 @@ int value() throws Error:
   
 	return value;
   }
-  |varCall()
-  {
-    try
-    {
-      value = Integer.parseInt(Robot.variableMap.get(token.image).image);
-    }
-   	catch (NumberFormatException ee) 
-		{
-			throw new Error("Hay overflow con el valor: "+token.image);
-		}
-	return value;
-  })
+  |value = varCall()
+  {	return value; })//Si se retorna -1 significa que el varCall() corresponde al parámetros de una función
 }
 
 //value() retorna el valor numérico para usarlo con los métodos de world

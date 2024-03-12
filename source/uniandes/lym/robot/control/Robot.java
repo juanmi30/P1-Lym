@@ -16,7 +16,7 @@ import java.util.LinkedList;
 
 @SuppressWarnings("serial")
 public class Robot implements RobotConstants {
-        public static Map<String, Token> variableMap = new HashMap<>();
+        public static Map<String, Integer> variableMap = new HashMap<>();
         public static Map<String, List<String>> functionMap = new HashMap<>();
         public static Map<String, String> paramFunctionMap = new HashMap<>();
         public static String salida = new String();
@@ -29,12 +29,13 @@ public class Robot implements RobotConstants {
         }
 
 /*Variable and Procedure Definitions*/
-  final public void varDefinition() throws ParseException {Token token;
+  final public void varDefinition() throws ParseException {Token variableName;
+  int variableValue;
     jj_consume_token(DEFVAR);
-    token = jj_consume_token(WORD);
-    value();
+    variableName = jj_consume_token(WORD);
+    variableValue = value();
     jj_consume_token(RPAREN);
-Robot.variableMap.put(token.image, token);
+Robot.variableMap.put(variableName.image, variableValue);
 }
 
   final public void procedureDefinition() throws ParseException {Token tokenFunName;
@@ -144,7 +145,6 @@ Robot.functionMap.get(funName).add(tokenParamName.image);
 }
 
   final public void procedureCall() throws ParseException {Token funName;
-  Token paramToken;
   List<String> paramTokens = new ArrayList<>();
     funName = jj_consume_token(WORD);
     label_3:
@@ -162,16 +162,16 @@ Robot.functionMap.get(funName).add(tokenParamName.image);
       }
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case NUM:{
-        paramToken = jj_consume_token(NUM);
+        jj_consume_token(NUM);
         break;
         }
       case CONSTANT:{
-        paramToken = jj_consume_token(CONSTANT);
+        jj_consume_token(CONSTANT);
         break;
         }
       case WORD:{
-        paramToken = varCall();
-paramTokens.add(paramToken.image);
+        varCall();
+paramTokens.add(token.image);
         break;
         }
       default:
@@ -240,6 +240,7 @@ if (paramTokens.size() != Robot.functionMap.get(funName).size()) {
 
 /*Commands*/
   final public void assign() throws ParseException {String variableName;
+  int variableValue;
     jj_consume_token(ASSIGN);
     jj_consume_token(WORD);
 variableName = token.image;
@@ -247,16 +248,19 @@ variableName = token.image;
     {
       {if (true) throw new ParseException("Error: La variable " + variableName + " no est\u00c3\u00a1 definida.");}
     }
-    value();
-Robot.variableMap.put(variableName, token);
+    variableValue = value();
+Robot.variableMap.put(variableName, variableValue);
     Robot.salida = "Command: variable assignment";
 }
 
   final public void move() throws ParseException {int numberSteps;
     jj_consume_token(MOVE);
     numberSteps = value();
-world.moveForward(numberSteps, false);
-    Robot.salida = "Command: move";
+if (numberSteps != -1)
+    {
+      world.moveForward(numberSteps, false);
+      Robot.salida = "Command: move";
+    }
 }
 
   final public void skip() throws ParseException {
@@ -547,20 +551,33 @@ direction = token.image;
 }
 
 /* Auxiliary Functions*/
-  final public Token varCall() throws ParseException {Token token;
-    token = jj_consume_token(WORD);
-if (!Robot.variableMap.containsKey(token.image)) {
+  final public int varCall() throws ParseException {int value = -1;
+    jj_consume_token(WORD);
+if (Robot.variableMap.containsKey(token.image))
+    {
+      try
+      {
+        value = Robot.variableMap.get(token.image);
+      }
+      catch (NumberFormatException ee)
+      {
+        {if (true) throw new Error("Hay overflow con el valor: "+value);}
+      }
+
+      {if ("" != null) return value;}
+    }
+    if (!Robot.variableMap.containsKey(token.image)) {
                 if (!Robot.paramFunctionMap.containsKey(token.image)) {
                         {if (true) throw new ParseException("Error: La variable " + token.image + " no est\u00c3\u00a1 definida.");}
         }
     }
-    {if ("" != null) return token;}
+
+    {if ("" != null) return value;} //Si se retorna -1 significa que el varCall() corresponde al parámetros de una función
+
     throw new Error("Missing return statement in function");
 }
 
-//TODO: No creo que sea necesario retornar el token porque al hacer <WORD> el global se actualiza automáticamente
-  final public 
-int value() throws ParseException, Error {int value = -1;
+  final public int value() throws ParseException, Error {int value = -1;
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case NUM:{
       jj_consume_token(NUM);
@@ -591,16 +608,8 @@ String image = token.image;
       break;
       }
     case WORD:{
-      varCall();
-try
-    {
-      value = Integer.parseInt(Robot.variableMap.get(token.image).image);
-    }
-        catch (NumberFormatException ee)
-                {
-                        {if (true) throw new Error("Hay overflow con el valor: "+token.image);}
-                }
-        {if ("" != null) return value;}
+      value = varCall();
+{if ("" != null) return value;}
       break;
       }
     default:
