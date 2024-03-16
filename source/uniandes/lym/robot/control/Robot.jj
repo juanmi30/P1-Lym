@@ -339,7 +339,7 @@ void moveDir():
   int numberItem;
   }
 {
-  < MOVEDIR > numberItem=value()(itemToken = <DIRECTION>)
+  < MOVEDIR > numberItem=value()(itemToken = direction())
   {
     //guardar orientacion inicial
     initialOrientation = world.getFacing();
@@ -370,12 +370,12 @@ void moveDir():
 void runDirs():
 {
   List<String> directionsList = new ArrayList<>();
-  String directionReturn;
+  Token directionReturn;
   int initialOrientation;
 }
 {
   < RUNDIRS >(directionReturn = direction() {
-    directionsList.add(directionReturn);
+    directionsList.add(directionReturn.image);
     })+
   {
     for (String direction : directionsList) {
@@ -462,28 +462,55 @@ void repeatTimes() :
 
 /*Conditionals*/
 void conditional() :
-{}
 {
-  <IF>(condition())(parseCommand()|block())(parseCommand()|block())
+  boolean conditionReturn;
+}
+{
+  <IF>(conditionReturn = condition())(block())(block())
 }
 
-void condition() :
-{}
+boolean condition() :
 {
-  <LPAREN>(facingCondition()
-  |blockedCondition()
-  |canputCondition()
-  |canpickCondition()
-  |canmoveCondition()
-  |iszeroCondition()
-  |notCondition())
+  boolean valueReturn;
+  }
+{
+  <LPAREN>(valueReturn = facingCondition()
+  |valueReturn = blockedCondition()
+  |valueReturn = canputCondition()
+  |valueReturn = canpickCondition()
+  |valueReturn = canmoveCondition()
+  |valueReturn = iszeroCondition()
+  |valueReturn = notCondition())
   <RPAREN>
 }
 
-void facingCondition() :
-{}
+boolean facingCondition() :
 {
-  <FACING><ORIENTATION>
+  Token orientationToken;
+  String orientationTokenValue;
+  int orientationValue = -1;
+  boolean returnValue;
+}
+{
+  <FACING>(orientationToken = <ORIENTATION>)
+  {
+    orientationTokenValue = orientationToken.image;
+    if(orientationTokenValue.equals(":north")) {
+      orientationValue = 0;
+      } else if (orientationTokenValue.equals(":south")) {
+        orientationValue = 1;
+      } else if (orientationTokenValue.equals(":east")) {
+        orientationValue = 2;
+      } else if (orientationTokenValue.equals(":west")) {
+		orientationValue = 3;
+        }
+     if (orientationValue == world.getFacing()) {
+       returnValue = true;
+        } else {
+        returnValue = false;
+          }
+     return returnValue;
+  }
 }
 
 void blockedCondition() :
@@ -588,19 +615,17 @@ int value() throws Error:
 
 //value() retorna el valor numérico para usarlo con los métodos de world
 
-String direction():
+Token direction():
 {
   Token directionToken;
-  String directionTokenImage;
 }
 {
   directionToken = < DIRECTION >
   {
-    directionTokenImage = directionToken.image;
     if (!(token.image.equals(":front") || token.image.equals(":right") || token.image.equals(":left") || token.image.equals(":back"))) {
 		throw new ParseException("Error: la dirección " + token.image + " no es válida con el comando move-dir o run-dirs.");
     }
-    return directionTokenImage;
+    return directionToken;
   }
 }
 

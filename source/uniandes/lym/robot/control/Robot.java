@@ -336,7 +336,7 @@ if (itemToken.image.equals(":balloons")) {
   int numberItem;
     jj_consume_token(MOVEDIR);
     numberItem = value();
-    itemToken = jj_consume_token(DIRECTION);
+    itemToken = direction();
 //guardar orientacion inicial
     initialOrientation = world.getFacing();
 
@@ -363,13 +363,13 @@ if (itemToken.image.equals(":balloons")) {
 }
 
   final public void runDirs() throws ParseException {List<String> directionsList = new ArrayList<>();
-  String directionReturn;
+  Token directionReturn;
   int initialOrientation;
     jj_consume_token(RUNDIRS);
     label_5:
     while (true) {
       directionReturn = direction();
-directionsList.add(directionReturn);
+directionsList.add(directionReturn.image);
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case DIRECTION:{
         ;
@@ -517,26 +517,42 @@ orientationTokenValue = orientationToken.image;
 }
 
 /*Conditionals*/
-  final public void conditional() throws ParseException {
+  final public void conditional() throws ParseException {boolean conditionReturn;
     jj_consume_token(IF);
-    condition();
+    conditionReturn = condition();
+    block();
+    block();
+}
+
+  final public boolean condition() throws ParseException {boolean valueReturn;
+    jj_consume_token(LPAREN);
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-    case ASSIGN:
-    case MOVE:
-    case ROBOTSKIP:
-    case TURN:
-    case FACE:
-    case PUT:
-    case PICK:
-    case MOVEDIR:
-    case RUNDIRS:
-    case MOVEFACE:
-    case NULL:{
-      parseCommand();
+    case FACING:{
+      valueReturn = facingCondition();
       break;
       }
-    case LPAREN:{
-      block();
+    case BLOCKED:{
+      valueReturn = blockedCondition();
+      break;
+      }
+    case CANPUT:{
+      valueReturn = canputCondition();
+      break;
+      }
+    case CANPICK:{
+      valueReturn = canpickCondition();
+      break;
+      }
+    case CANMOVE:{
+      valueReturn = canmoveCondition();
+      break;
+      }
+    case ISZERO:{
+      valueReturn = iszeroCondition();
+      break;
+      }
+    case NOT:{
+      valueReturn = notCondition();
       break;
       }
     default:
@@ -544,74 +560,32 @@ orientationTokenValue = orientationToken.image;
       jj_consume_token(-1);
       throw new ParseException();
     }
-    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-    case ASSIGN:
-    case MOVE:
-    case ROBOTSKIP:
-    case TURN:
-    case FACE:
-    case PUT:
-    case PICK:
-    case MOVEDIR:
-    case RUNDIRS:
-    case MOVEFACE:
-    case NULL:{
-      parseCommand();
-      break;
-      }
-    case LPAREN:{
-      block();
-      break;
-      }
-    default:
-      jj_la1[12] = jj_gen;
-      jj_consume_token(-1);
-      throw new ParseException();
-    }
-}
-
-  final public void condition() throws ParseException {
-    jj_consume_token(LPAREN);
-    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-    case FACING:{
-      facingCondition();
-      break;
-      }
-    case BLOCKED:{
-      blockedCondition();
-      break;
-      }
-    case CANPUT:{
-      canputCondition();
-      break;
-      }
-    case CANPICK:{
-      canpickCondition();
-      break;
-      }
-    case CANMOVE:{
-      canmoveCondition();
-      break;
-      }
-    case ISZERO:{
-      iszeroCondition();
-      break;
-      }
-    case NOT:{
-      notCondition();
-      break;
-      }
-    default:
-      jj_la1[13] = jj_gen;
-      jj_consume_token(-1);
-      throw new ParseException();
-    }
     jj_consume_token(RPAREN);
 }
 
-  final public void facingCondition() throws ParseException {
+  final public boolean facingCondition() throws ParseException {Token orientationToken;
+  String orientationTokenValue;
+  int orientationValue = -1;
+  boolean returnValue;
     jj_consume_token(FACING);
-    jj_consume_token(ORIENTATION);
+    orientationToken = jj_consume_token(ORIENTATION);
+orientationTokenValue = orientationToken.image;
+    if(orientationTokenValue.equals(":north")) {
+      orientationValue = 0;
+      } else if (orientationTokenValue.equals(":south")) {
+        orientationValue = 1;
+      } else if (orientationTokenValue.equals(":east")) {
+        orientationValue = 2;
+      } else if (orientationTokenValue.equals(":west")) {
+                orientationValue = 3;
+        }
+     if (orientationValue == world.getFacing()) {
+       returnValue = true;
+        } else {
+        returnValue = false;
+          }
+     {if ("" != null) return returnValue;}
+    throw new Error("Missing return statement in function");
 }
 
   final public void blockedCondition() throws ParseException {
@@ -708,7 +682,7 @@ String image = token.image;
       break;
       }
     default:
-      jj_la1[14] = jj_gen;
+      jj_la1[12] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -717,14 +691,12 @@ String image = token.image;
 
 //value() retorna el valor numérico para usarlo con los métodos de world
   final public 
-String direction() throws ParseException {Token directionToken;
-  String directionTokenImage;
+Token direction() throws ParseException {Token directionToken;
     directionToken = jj_consume_token(DIRECTION);
-directionTokenImage = directionToken.image;
-    if (!(token.image.equals(":front") || token.image.equals(":right") || token.image.equals(":left") || token.image.equals(":back"))) {
+if (!(token.image.equals(":front") || token.image.equals(":right") || token.image.equals(":left") || token.image.equals(":back"))) {
                 {if (true) throw new ParseException("Error: la direcci\u00c3\u00b3n " + token.image + " no es v\u00c3\u00a1lida con el comando move-dir o run-dirs.");}
     }
-    {if ("" != null) return directionTokenImage;}
+    {if ("" != null) return directionToken;}
     throw new Error("Missing return statement in function");
 }
 
@@ -763,7 +735,7 @@ directionTokenImage = directionToken.image;
           break;
           }
         default:
-          jj_la1[15] = jj_gen;
+          jj_la1[13] = jj_gen;
           jj_consume_token(-1);
           throw new ParseException();
         }
@@ -781,7 +753,7 @@ try {
           break;
           }
         default:
-          jj_la1[16] = jj_gen;
+          jj_la1[14] = jj_gen;
           break label_6;
         }
       }
@@ -793,7 +765,7 @@ try {
       break;
       }
     default:
-      jj_la1[17] = jj_gen;
+      jj_la1[15] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -809,7 +781,7 @@ try {
   public Token jj_nt;
   private int jj_ntk;
   private int jj_gen;
-  final private int[] jj_la1 = new int[18];
+  final private int[] jj_la1 = new int[16];
   static private int[] jj_la1_0;
   static private int[] jj_la1_1;
   static {
@@ -817,10 +789,10 @@ try {
 	   jj_la1_init_1();
 	}
 	private static void jj_la1_init_0() {
-	   jj_la1_0 = new int[] {0x0,0x0,0xe1ff60,0x0,0x80100000,0x80100000,0x1ff60,0x40000,0xe00000,0x1ff60,0x1ff60,0x1ff60,0x1ff60,0x7f000000,0x80100000,0xe1ff60,0x0,0x1,};
+	   jj_la1_0 = new int[] {0x0,0x0,0xe1ff60,0x0,0x80100000,0x80100000,0x1ff60,0x40000,0xe00000,0x1ff60,0x1ff60,0x7f000000,0x80100000,0xe1ff60,0x0,0x1,};
 	}
 	private static void jj_la1_init_1() {
-	   jj_la1_1 = new int[] {0x1,0x10,0x10,0x1,0x10,0x10,0x0,0x0,0x0,0x1,0x1,0x1,0x1,0x0,0x10,0x1c,0x1,0x1,};
+	   jj_la1_1 = new int[] {0x1,0x10,0x10,0x1,0x10,0x10,0x0,0x0,0x0,0x1,0x1,0x0,0x10,0x1c,0x1,0x1,};
 	}
 
   /** Constructor with InputStream. */
@@ -834,7 +806,7 @@ try {
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 18; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 16; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -848,7 +820,7 @@ try {
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 18; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 16; i++) jj_la1[i] = -1;
   }
 
   /** Constructor. */
@@ -858,7 +830,7 @@ try {
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 18; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 16; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -876,7 +848,7 @@ try {
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 18; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 16; i++) jj_la1[i] = -1;
   }
 
   /** Constructor with generated Token Manager. */
@@ -885,7 +857,7 @@ try {
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 18; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 16; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -894,7 +866,7 @@ try {
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 18; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 16; i++) jj_la1[i] = -1;
   }
 
   private Token jj_consume_token(int kind) throws ParseException {
@@ -950,7 +922,7 @@ try {
 	   la1tokens[jj_kind] = true;
 	   jj_kind = -1;
 	 }
-	 for (int i = 0; i < 18; i++) {
+	 for (int i = 0; i < 16; i++) {
 	   if (jj_la1[i] == jj_gen) {
 		 for (int j = 0; j < 32; j++) {
 		   if ((jj_la1_0[i] & (1<<j)) != 0) {
