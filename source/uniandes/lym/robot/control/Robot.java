@@ -701,11 +701,36 @@ orientationValue = world.getFacing();
     throw new Error("Missing return statement in function");
 }
 
-  final public boolean canpickCondition() throws ParseException {boolean returnValue = false;
+  final public boolean canpickCondition() throws ParseException {Token item;
+  int value;
     jj_consume_token(CANPICK);
-    jj_consume_token(ITEM);
-    value();
-{if ("" != null) return returnValue;}
+    item = jj_consume_token(ITEM);
+    value = value();
+if (value == -1) { {if ("" != null) return false;} }
+
+    if (item.image.equals(":chips"))
+    {
+      if (value > 0 && world.chipsToPick() >= value)
+      {
+        {if ("" != null) return true;}
+      }
+      else
+      {
+        {if ("" != null) return false;}
+      }
+    }
+
+    if (item.image.equals(":balloons"))
+    {
+      if (value > 0 && world.countBalloons() >= value)
+      {
+        {if ("" != null) return true;}
+      }
+      else
+      {
+        {if ("" != null) return false;}
+      }
+    }
     throw new Error("Missing return statement in function");
 }
 

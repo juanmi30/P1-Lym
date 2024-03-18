@@ -634,14 +634,39 @@ boolean canputCondition() :
   }
 }
 
-boolean canpickCondition() :
+boolean canpickCondition():
 {
-  boolean returnValue = false;
+  Token item;
+  int value;
 }
 {
-  <CANPICK><ITEM>value()
+  <CANPICK>item=<ITEM>value=value()
   {
-    return returnValue;
+    if (value == -1) { return false; }
+    
+    if (item.image.equals(":chips"))
+    {
+      if (value > 0 && world.chipsToPick() >= value)
+      {
+        return true;
+      }
+      else
+      {
+        return false;
+      }
+    }
+
+    if (item.image.equals(":balloons"))
+    {
+      if (value > 0 && world.countBalloons() >= value)
+      {
+        return true;
+      }
+      else
+      {
+        return false;
+      }
+    }
   }
 }
 
