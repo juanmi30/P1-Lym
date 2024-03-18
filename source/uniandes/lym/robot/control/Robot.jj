@@ -527,7 +527,6 @@ void conditional(boolean runWorld) :
   boolean conditionReturn;
 }
 {
-  //TODO: Revisar si condition necesita runWorld
   <IF>(conditionReturn = condition())
   {
     if (runWorld)
@@ -813,7 +812,7 @@ Token direction():
 //Initial Rule
 boolean command(Console sistema):
 {}
-{//TODO: Revisar var y procedure Definition para ver si se necesita runWorld
+{
 	(<LPAREN>(varDefinition()|procedureDefinition()|instruction(true)) 
 	{
 	    try {
@@ -828,23 +827,3 @@ boolean command(Console sistema):
 
 	| <EOF> {return false;} 
 }
-
-//void put() :
-//{
-//	int f=1;	
-//}
-//{
-//	( <CHIPS>    "," f=num() {world.putChips(f); salida = "Command:  Put Chips"; })
-//	|  	  ( <BALLOONS>   "," f=num() {world.putBalloons(f); salida = "Command:  Put Balloons";})	 
-//
-//}
-//
-//void get() :
-//{
-//	int f=1;	
-//}
-//{
-//	( <CHIPS>   "," f=num() {world.pickChips(f);salida = "Command:  Pick chips";})
-//	|  	  ( <BALLOONS>   "," f=num() {world.grabBalloons(f);salida="Command:  Pick balloons";})	 
-//
-//}
