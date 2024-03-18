@@ -643,6 +643,9 @@ if (runWorld)
       throw new ParseException();
     }
     jj_consume_token(RPAREN);
+System.out.println(valueReturn);
+    {if ("" != null) return valueReturn;}
+    throw new Error("Missing return statement in function");
 }
 
   final public boolean facingCondition() throws ParseException {Token orientationToken;
@@ -670,35 +673,111 @@ orientationTokenValue = orientationToken.image;
     throw new Error("Missing return statement in function");
 }
 
-  final public void blockedCondition() throws ParseException {
+  final public boolean blockedCondition() throws ParseException {Point position;
+  int orientationValue;
+  boolean returnValue = false;
     jj_consume_token(BLOCKED);
+orientationValue = world.getFacing();
+    position = world.getPosition();
+    if (orientationValue == 0) {
+      position.y -= 1;
+     } else if (orientationValue == 1) {
+       position.y +=1;
+     } else if (orientationValue == 2) {
+       position.x +=1;
+     } else if (orientationValue == 3) {
+       position.x -=1;
+     }
+     returnValue = world.isBlocked(position);
+     {if ("" != null) return returnValue;}
+    throw new Error("Missing return statement in function");
 }
 
-  final public void canputCondition() throws ParseException {
+  final public boolean canputCondition() throws ParseException {boolean returnValue = false;
     jj_consume_token(CANPUT);
     jj_consume_token(ITEM);
     value();
+{if ("" != null) return returnValue;}
+    throw new Error("Missing return statement in function");
 }
 
-  final public void canpickCondition() throws ParseException {
+  final public boolean canpickCondition() throws ParseException {boolean returnValue = false;
     jj_consume_token(CANPICK);
     jj_consume_token(ITEM);
     value();
+{if ("" != null) return returnValue;}
+    throw new Error("Missing return statement in function");
 }
 
-  final public void canmoveCondition() throws ParseException {
+  final public boolean canmoveCondition() throws ParseException {boolean outOfBounds = false;
+  boolean canMove = false;
+  Token tokenOrientation;
+  String orientationTokenValue;
+  Point position = world.getPosition();
     jj_consume_token(CANMOVE);
-    jj_consume_token(ORIENTATION);
+    tokenOrientation = jj_consume_token(ORIENTATION);
+orientationTokenValue = tokenOrientation.image;
+   if(orientationTokenValue.equals(":north")) {
+      position.y -= 1;
+
+      //comprobar si está dentro del tablero
+    if (position.y > world.getN() || position.y < 1) {
+      outOfBounds = true;
+      }
+
+      } else if (orientationTokenValue.equals(":south")) {
+        position.y += 1;
+
+        //comprobar si está dentro del tablero
+        if (position.y > world.getN() || position.y < 1) {
+                outOfBounds = true;
+                }
+
+      } else if (orientationTokenValue.equals(":east")) {
+        position.x += 1;
+
+        if (position.x > world.getN() || position.x < 1) {
+                outOfBounds = true;
+        }
+
+      } else if (orientationTokenValue.equals(":west")) {
+                position.x -= 1;
+
+                //comprobar si está dentro del tablero
+                if (position.x > world.getN() || position.x < 1) {
+                outOfBounds = true;
+        }
+        }
+
+    //comprobar isBlocked
+    if (!world.isBlocked(position) && !outOfBounds) {
+      canMove = true;
+      }
+
+   {if ("" != null) return canMove;}
+    throw new Error("Missing return statement in function");
 }
 
-  final public void iszeroCondition() throws ParseException {
+  final public boolean iszeroCondition() throws ParseException {boolean returnBoolValue = false;
+  int returnNumberValue;
     jj_consume_token(ISZERO);
-    value();
+    returnNumberValue = value();
+if (returnNumberValue == 0) {
+      returnBoolValue = true;
+      }
+    {if ("" != null) return returnBoolValue;}
+    throw new Error("Missing return statement in function");
 }
 
-  final public void notCondition() throws ParseException {
+  final public boolean notCondition() throws ParseException {boolean returnValue = false;
+  boolean conditionValue = false;
     jj_consume_token(NOT);
-    condition();
+    conditionValue = condition();
+if (!conditionValue) {
+      returnValue = true;
+      }
+    {if ("" != null) return returnValue;}
+    throw new Error("Missing return statement in function");
 }
 
 /* Auxiliary Functions*/

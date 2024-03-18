@@ -564,6 +564,10 @@ boolean condition() :
   |valueReturn = iszeroCondition()
   |valueReturn = notCondition())
   <RPAREN>
+  {
+    System.out.println(valueReturn);
+    return valueReturn;
+  }
 }
 
 boolean facingCondition() :
@@ -595,40 +599,135 @@ boolean facingCondition() :
   }
 }
 
-void blockedCondition() :
-{}
+boolean blockedCondition() :
+{
+  Point position;
+  int orientationValue;
+  boolean returnValue = false;
+}
 {
   <BLOCKED>
+  {
+    orientationValue = world.getFacing();
+    position = world.getPosition();
+    if (orientationValue == 0) {
+      position.y -= 1;
+     } else if (orientationValue == 1) {
+       position.y +=1;
+     } else if (orientationValue == 2) {
+       position.x +=1;
+     } else if (orientationValue == 3) {
+       position.x -=1;
+     }
+     returnValue = world.isBlocked(position);
+     return returnValue;
+  } 
 }
 
-void canputCondition() :
-{}
+boolean canputCondition() :
+{
+  boolean returnValue = false;
+}
 {
   <CANPUT><ITEM>value()
+  {
+    return returnValue;
+  }
 }
 
-void canpickCondition() :
-{}
+boolean canpickCondition() :
+{
+  boolean returnValue = false;
+}
 {
   <CANPICK><ITEM>value()
+  {
+    return returnValue;
+  }
 }
 
-void canmoveCondition() :
-{}
+boolean canmoveCondition() :
 {
- <CANMOVE><ORIENTATION> 
+  boolean outOfBounds = false;
+  boolean canMove = false;
+  Token tokenOrientation;
+  String orientationTokenValue;
+  Point position = world.getPosition();
+}
+{
+ <CANMOVE>(tokenOrientation = <ORIENTATION>)
+ 
+ {
+   orientationTokenValue = tokenOrientation.image;
+   if(orientationTokenValue.equals(":north")) {
+      position.y -= 1;
+      
+      //comprobar si está dentro del tablero
+    if (position.y > world.getN() || position.y < 1) {
+      outOfBounds = true;
+      }
+        
+      } else if (orientationTokenValue.equals(":south")) {
+        position.y += 1;
+
+        //comprobar si está dentro del tablero
+    	if (position.y > world.getN() || position.y < 1) {
+      		outOfBounds = true;
+      		}
+        
+      } else if (orientationTokenValue.equals(":east")) {
+        position.x += 1;
+        
+        if (position.x > world.getN() || position.x < 1) {
+      		outOfBounds = true;
+      	}
+        
+      } else if (orientationTokenValue.equals(":west")) {
+		position.x -= 1;
+
+		//comprobar si está dentro del tablero
+		if (position.x > world.getN() || position.x < 1) {
+      		outOfBounds = true;
+      	}
+        }
+        
+    //comprobar isBlocked
+    if (!world.isBlocked(position) && !outOfBounds) {
+      canMove = true;
+      }
+        
+   return canMove;
+ } 
 }
 
-void iszeroCondition() :
-{}
+boolean iszeroCondition() :
 {
-  <ISZERO>value()
+  boolean returnBoolValue = false;
+  int returnNumberValue;
+}
+{
+  <ISZERO>(returnNumberValue = value())
+  {
+    if (returnNumberValue == 0) {
+      returnBoolValue = true;
+      }
+    return returnBoolValue;
+  }
 }
 
-void notCondition() :
-{}
+boolean notCondition() :
 {
-  <NOT>condition()
+  boolean returnValue = false;
+  boolean conditionValue = false;
+}
+{
+  <NOT>(conditionValue = condition())
+  {
+    if (!conditionValue) {
+      returnValue = true;
+      }
+    return returnValue;
+  }
 }
 
 /* Auxiliary Functions*/
