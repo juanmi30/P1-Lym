@@ -625,12 +625,27 @@ boolean blockedCondition() :
 
 boolean canputCondition() :
 {
-  boolean returnValue = false;
+  boolean returnValue = true;
+  Token item;
+  int itemValue = 0;
 }
 {
-  <CANPUT><ITEM>value()
+  <CANPUT>(item = <ITEM>)(itemValue = value())
   {
-    return returnValue;
+	if (itemValue != -1) {
+	  if (item.image.equals(":chips")) {
+	 	 if (itemValue > world.freeSpacesForChips() || itemValue < 0 || world.getMyChips() < itemValue) {
+	  	  returnValue = false;
+	   	 }
+	  } else if(item.image.equals(":balloons")) {
+	    if (itemValue < 0 || world.getMyBalloons() < itemValue) {
+	      returnValue = false;
+	      }
+	    }	    
+	  } else {
+	    returnValue = false;
+	    }
+	 return returnValue;
   }
 }
 
