@@ -173,7 +173,7 @@ void procedureCall() :
 	}
   )*
 	{
-	  if (paramTokens.size() != Robot.functionMap.get(funName).size()) {
+	  if (paramTokens.size() != Robot.functionMap.get(funName.image).size()) {
 		throw new ParseException("Error: los parámetros de ingreso no coinciden con los esperados.");
 	    }	
 	}

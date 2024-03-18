@@ -172,7 +172,7 @@ paramTokens.add(token.image);
         throw new ParseException();
       }
     }
-if (paramTokens.size() != Robot.functionMap.get(funName).size()) {
+if (paramTokens.size() != Robot.functionMap.get(funName.image).size()) {
                 {if (true) throw new ParseException("Error: los par\u00c3\u00a1metros de ingreso no coinciden con los esperados.");}
             }
 }
