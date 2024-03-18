@@ -49,7 +49,7 @@ Robot.functionMap.put(tokenFunName.image, paramsList);
     label_1:
     while (true) {
       jj_consume_token(LPAREN);
-      instruction();
+      instruction(false);
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case LPAREN:{
         ;
@@ -83,7 +83,7 @@ Robot.functionMap.get(funName).add(tokenParamName.image);
 }
 
 /*Instructions*/
-  final public void instruction() throws ParseException {
+  final public void instruction(boolean runWorld) throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case WORD:{
       procedureCall();
@@ -100,13 +100,13 @@ Robot.functionMap.get(funName).add(tokenParamName.image);
     case RUNDIRS:
     case MOVEFACE:
     case NULL:{
-      parseCommand();
+      parseCommand(runWorld);
       break;
       }
     case IF:
     case LOOP:
     case REPEAT:{
-      controlStructure();
+      controlStructure(runWorld);
       break;
       }
     default:
@@ -117,12 +117,12 @@ Robot.functionMap.get(funName).add(tokenParamName.image);
     jj_consume_token(RPAREN);
 }
 
-  final public void block() throws ParseException {
+  final public void block(boolean runWorld) throws ParseException {
     jj_consume_token(LPAREN);
     label_3:
     while (true) {
       jj_consume_token(LPAREN);
-      instruction();
+      instruction(runWorld);
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case LPAREN:{
         ;
@@ -136,6 +136,7 @@ Robot.functionMap.get(funName).add(tokenParamName.image);
     jj_consume_token(RPAREN);
 }
 
+//TODO: Modificar para que en efecto corra la función
   final public void procedureCall() throws ParseException {Token funName;
   List<String> paramTokens = new ArrayList<>();
     funName = jj_consume_token(WORD);
@@ -155,10 +156,12 @@ Robot.functionMap.get(funName).add(tokenParamName.image);
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case NUM:{
         jj_consume_token(NUM);
+paramTokens.add(token.image);
         break;
         }
       case CONSTANT:{
         jj_consume_token(CONSTANT);
+paramTokens.add(token.image);
         break;
         }
       case WORD:{
@@ -172,51 +175,52 @@ paramTokens.add(token.image);
         throw new ParseException();
       }
     }
-if (paramTokens.size() != Robot.functionMap.get(funName.image).size()) {
-                {if (true) throw new ParseException("Error: los par\u00c3\u00a1metros de ingreso no coinciden con los esperados.");}
-            }
+if (paramTokens.size() != Robot.functionMap.get(funName.image).size())
+    {
+      {if (true) throw new ParseException("Error: La cantidad de par\u00c3\u00a1metros ingresados no coincide con la cantidad esperada.");}
+    }
 }
 
-  final public void parseCommand() throws ParseException {
+  final public void parseCommand(boolean runWorld) throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case ASSIGN:{
-      assign();
+      assign(runWorld);
       break;
       }
     case MOVE:{
-      move();
+      move(runWorld);
       break;
       }
     case ROBOTSKIP:{
-      skip();
+      skip(runWorld);
       break;
       }
     case TURN:{
-      turn();
+      turn(runWorld);
       break;
       }
     case FACE:{
-      face();
+      face(runWorld);
       break;
       }
     case PUT:{
-      put();
+      put(runWorld);
       break;
       }
     case PICK:{
-      pick();
+      pick(runWorld);
       break;
       }
     case MOVEDIR:{
-      moveDir();
+      moveDir(runWorld);
       break;
       }
     case RUNDIRS:{
-      runDirs();
+      runDirs(runWorld);
       break;
       }
     case MOVEFACE:{
-      moveFace();
+      moveFace(runWorld);
       break;
       }
     case NULL:{
@@ -231,7 +235,7 @@ if (paramTokens.size() != Robot.functionMap.get(funName.image).size()) {
 }
 
 /*Commands*/
-  final public void assign() throws ParseException {String variableName;
+  final public void assign(boolean runWorld) throws ParseException {String variableName;
   int variableValue;
     jj_consume_token(ASSIGN);
     jj_consume_token(WORD);
@@ -241,32 +245,40 @@ variableName = token.image;
       {if (true) throw new ParseException("Error: La variable " + variableName + " no est\u00c3\u00a1 definida.");}
     }
     variableValue = value();
-Robot.variableMap.put(variableName, variableValue);
-    Robot.salida = "Command: variable assignment";
+if (variableValue != -1 && runWorld)
+    {
+      Robot.variableMap.put(variableName, variableValue);
+      Robot.salida = "Command: variable assignment";
+    }
 }
 
-  final public void move() throws ParseException {int numberSteps;
+  final public void move(boolean runWorld) throws ParseException {int numberSteps;
     jj_consume_token(MOVE);
     numberSteps = value();
-if (numberSteps != -1)
+if (numberSteps != -1 && runWorld)
     {
       world.moveForward(numberSteps, false);
       Robot.salida = "Command: move";
     }
 }
 
-  final public void skip() throws ParseException {int numberValue;
+  final public void skip(boolean runWorld) throws ParseException {int numberValue;
     jj_consume_token(ROBOTSKIP);
     numberValue = value();
-world.moveForward(numberValue, true);
-    Robot.salida = "Command: skip";
+if (numberValue != -1 && runWorld)
+    {
+      world.moveForward(numberValue, true);
+      Robot.salida = "Command: skip";
+    }
 }
 
-  final public void turn() throws ParseException {String direction;
+  final public void turn(boolean runWorld) throws ParseException {String direction;
     jj_consume_token(TURN);
     jj_consume_token(DIRECTION);
-direction = token.image;
-        switch(direction) {
+if (runWorld)
+    {
+      direction = token.image;
+      switch(direction) {
             case ":left":
                 world.turnRight();
                 world.turnRight();
@@ -281,88 +293,121 @@ direction = token.image;
                 break;
             default:
                 {if (true) throw new ParseException("Error: la direcci\u00c3\u00b3n " + token.image + " no es v\u00c3\u00a1lida con el comando turn.");}
-        }
-        Robot.salida = "Command: turn";
+                }
+      Robot.salida = "Command: turn";
+    }
 }
 
-  final public void face() throws ParseException {String orientationTokenValue;
-int orientationValue = -1;
+  final public void face(boolean runWorld) throws ParseException {String orientationTokenValue;
+  int orientationValue = -1;
     jj_consume_token(FACE);
     jj_consume_token(ORIENTATION);
-orientationTokenValue = token.image;
-    if(orientationTokenValue.equals(":north")) {
-      orientationValue = 0;
-      } else if (orientationTokenValue.equals(":south")) {
+if (runWorld)
+    {
+      orientationTokenValue = token.image;
+      if(orientationTokenValue.equals(":north"))
+      {
+        orientationValue = 0;
+      }
+      else if (orientationTokenValue.equals(":south"))
+      {
         orientationValue = 1;
-      } else if (orientationTokenValue.equals(":east")) {
+      }
+      else if (orientationTokenValue.equals(":east"))
+      {
         orientationValue = 2;
-      } else if (orientationTokenValue.equals(":west")) {
-                orientationValue = 3;
-        }
-     while (world.getFacing() != orientationValue) {
-       world.turnRight();
-       }
-       Robot.salida = "Command: face";
+      }
+      else if (orientationTokenValue.equals(":west"))
+      {
+        orientationValue = 3;
+      }
+      while (world.getFacing() != orientationValue)
+      {
+        world.turnRight();
+      }
+      Robot.salida = "Command: face";
+    }
 }
 
-  final public void put() throws ParseException {Token itemToken;
+  final public void put(boolean runWorld) throws ParseException {Token itemToken;
   int numberItem;
     jj_consume_token(PUT);
     itemToken = jj_consume_token(ITEM);
     numberItem = value();
-if (itemToken.image.equals(":balloons")) {
-      world.putBalloons(numberItem);
-      } else if (itemToken.image.equals(":chips")) {
+if (numberItem != -1 && runWorld)
+    {
+      if (itemToken.image.equals(":balloons"))
+      {
+        world.putBalloons(numberItem);
+      }
+      else if (itemToken.image.equals(":chips"))
+      {
         world.putChips(numberItem);
-        }
-    Robot.salida = "Command: put";
+      }
+      Robot.salida = "Command: put";
+    }
 }
 
-  final public void pick() throws ParseException {Token itemToken;
+  final public void pick(boolean runWorld) throws ParseException {Token itemToken;
   int numberItem;
     jj_consume_token(PICK);
     itemToken = jj_consume_token(ITEM);
     numberItem = value();
-if (itemToken.image.equals(":balloons")) {
-      world.grabBalloons(numberItem);
-      } else if (itemToken.image.equals(":chips")) {
+if (numberItem != -1 && runWorld)
+    {
+      if (itemToken.image.equals(":balloons"))
+      {
+        world.grabBalloons(numberItem);
+      }
+      else if (itemToken.image.equals(":chips"))
+      {
         world.pickChips(numberItem);
-        }
-    Robot.salida = "Command: pick";
+      }
+      Robot.salida = "Command: pick";
+    }
 }
 
-  final public void moveDir() throws ParseException {Token itemToken;
+  final public void moveDir(boolean runWorld) throws ParseException {Token itemToken;
   int initialOrientation;
   int numberItem;
     jj_consume_token(MOVEDIR);
     numberItem = value();
     itemToken = direction();
-//guardar orientacion inicial
-    initialOrientation = world.getFacing();
-
-    if (itemToken.image.equals(":right")) {
-      world.turnRight();
-      world.moveForward(numberItem, false);
-      } else if (itemToken.image.equals(":left")) {
+if (numberItem != -1 && runWorld)
+    {
+      //guardar orientacion inicial
+      initialOrientation = world.getFacing();
+      if (itemToken.image.equals(":right"))
+      {
+        world.turnRight();
+        world.moveForward(numberItem, false);
+      }
+      else if (itemToken.image.equals(":left"))
+      {
         world.turnRight();
         world.turnRight();
         world.turnRight();
         world.moveForward(numberItem, false);
-       } else if (itemToken.image.equals(":front")) {
-         world.moveForward(numberItem, false);
-         } else if (itemToken.image.equals(":back")) {
-                 world.turnRight();
-                 world.turnRight();
-         world.moveForward(numberItem, false);
-         }
-     //Volver a orientacion de inicio
-     while (world.getFacing() != initialOrientation) {
-       world.turnRight();
-       }
-    Robot.salida = "Command: move-dir";
+          }
+          else if (itemToken.image.equals(":front"))
+          {
+            world.moveForward(numberItem, false);
+          }
+          else if (itemToken.image.equals(":back"))
+          {
+            world.turnRight();
+            world.turnRight();
+            world.moveForward(numberItem, false);
+          }//Volver a orientacion de inicio
+          while (world.getFacing() != initialOrientation)
+          {
+            world.turnRight();
+          }
+          Robot.salida = "Command: move-dir";
+    }
 }
 
-  final public void runDirs() throws ParseException {List<String> directionsList = new ArrayList<>();
+  final public void runDirs(boolean runWorld) throws ParseException {List<String> directionsList = new ArrayList<>();
   Token directionReturn;
   int initialOrientation;
     jj_consume_token(RUNDIRS);
@@ -380,56 +425,77 @@ directionsList.add(directionReturn.image);
         break label_5;
       }
     }
-for (String direction : directionsList) {
+if (runWorld)
+    {
+      for (String direction : directionsList)
+      {
+        initialOrientation = world.getFacing();
 
-      initialOrientation = world.getFacing();
-
-     if (direction.equals(":right")) {
-        world.turnRight();
-        world.moveForward(1, false);
-      } else if (direction.equals(":left")) {
-        world.turnRight();
-        world.turnRight();
-        world.turnRight();
-        world.moveForward(1, false);
-       } else if (direction.equals(":front")) {
-         world.moveForward(1, false);
-         } else if (direction.equals(":back")) {
-                 world.turnRight();
-                 world.turnRight();
-         world.moveForward(1, false);
-         }
-     //Volver a orientacion de inicio
-     while (world.getFacing() != initialOrientation) {
-       world.turnRight();
-       }
+        if (direction.equals(":right"))
+        {
+          world.turnRight();
+          world.moveForward(1, false);
+        }
+        else if (direction.equals(":left"))
+        {
+          world.turnRight();
+          world.turnRight();
+          world.turnRight();
+          world.moveForward(1, false);
+        }
+        else if (direction.equals(":front"))
+        {
+          world.moveForward(1, false);
+        }
+        else if (direction.equals(":back"))
+        {
+          world.turnRight();
+          world.turnRight();
+          world.moveForward(1, false);
+        }
+                //Volver a orientacion de inicio
+        while (world.getFacing() != initialOrientation)
+        {
+          world.turnRight();
+        }
       }
-
       Robot.salida = "Command: rund dirs";
+    }
 }
 
-  final public void moveFace() throws ParseException {Token orientationToken;
+  final public void moveFace(boolean runWorld) throws ParseException {Token orientationToken;
   int moveValue;
   String orientationTokenValue;
   int orientationValue = -1;
     jj_consume_token(MOVEFACE);
     moveValue = value();
     orientationToken = jj_consume_token(ORIENTATION);
-orientationTokenValue = orientationToken.image;
-    if(orientationTokenValue.equals(":north")) {
-      orientationValue = 0;
-      } else if (orientationTokenValue.equals(":south")) {
+if (moveValue != -1 && runWorld)
+    {
+      orientationTokenValue = orientationToken.image;
+      if(orientationTokenValue.equals(":north"))
+      {
+        orientationValue = 0;
+      }
+      else if (orientationTokenValue.equals(":south"))
+      {
         orientationValue = 1;
-      } else if (orientationTokenValue.equals(":east")) {
+      }
+      else if (orientationTokenValue.equals(":east"))
+      {
         orientationValue = 2;
-      } else if (orientationTokenValue.equals(":west")) {
-                orientationValue = 3;
-        }
-     while (world.getFacing() != orientationValue) {
-       world.turnRight();
-       }
-       world.moveForward(moveValue, false);
-       Robot.salida = "Command: move-face";
+      }
+      else if (orientationTokenValue.equals(":west"))
+      {
+        orientationValue = 3;
+      }
+      while (world.getFacing() != orientationValue)
+      {
+        world.turnRight();
+      }
+      world.moveForward(moveValue, false);
+      Robot.salida = "Command: move-face";
+    }
 }
 
   final public void nullCommand() throws ParseException {
@@ -437,18 +503,18 @@ orientationTokenValue = orientationToken.image;
 }
 
 /*Control Structures*/
-  final public void controlStructure() throws ParseException {
+  final public void controlStructure(boolean runWorld) throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case IF:{
-      conditional();
+      conditional(runWorld);
       break;
       }
     case LOOP:{
-      repeat();
+      repeat(runWorld);
       break;
       }
     case REPEAT:{
-      repeatTimes();
+      repeatTimes(runWorld);
       break;
       }
     default:
@@ -458,7 +524,7 @@ orientationTokenValue = orientationToken.image;
     }
 }
 
-  final public void repeat() throws ParseException {
+  final public void repeat(boolean runWorld) throws ParseException {
     jj_consume_token(LOOP);
     condition();
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
@@ -473,11 +539,11 @@ orientationTokenValue = orientationToken.image;
     case RUNDIRS:
     case MOVEFACE:
     case NULL:{
-      parseCommand();
+      parseCommand(runWorld);
       break;
       }
     case LPAREN:{
-      block();
+      block(runWorld);
       break;
       }
     default:
@@ -487,7 +553,7 @@ orientationTokenValue = orientationToken.image;
     }
 }
 
-  final public void repeatTimes() throws ParseException {
+  final public void repeatTimes(boolean runWorld) throws ParseException {
     jj_consume_token(REPEAT);
     value();
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
@@ -502,11 +568,11 @@ orientationTokenValue = orientationToken.image;
     case RUNDIRS:
     case MOVEFACE:
     case NULL:{
-      parseCommand();
+      parseCommand(runWorld);
       break;
       }
     case LPAREN:{
-      block();
+      block(runWorld);
       break;
       }
     default:
@@ -517,11 +583,27 @@ orientationTokenValue = orientationToken.image;
 }
 
 /*Conditionals*/
-  final public void conditional() throws ParseException {boolean conditionReturn;
+  final public void conditional(boolean runWorld) throws ParseException {boolean conditionReturn;
     jj_consume_token(IF);
     conditionReturn = condition();
-    block();
-    block();
+if (runWorld)
+    {
+      if (conditionReturn)
+      {
+        block(true);
+        block(false);
+      }
+      else
+      {
+        block(false);
+        block(true);
+      }
+    }
+    else
+    {
+      block(false);
+      block(false);
+    }
 }
 
   final public boolean condition() throws ParseException {boolean valueReturn;
@@ -731,7 +813,7 @@ if (!(token.image.equals(":front") || token.image.equals(":right") || token.imag
         case LOOP:
         case REPEAT:
         case WORD:{
-          instruction();
+          instruction(true);
           break;
           }
         default:

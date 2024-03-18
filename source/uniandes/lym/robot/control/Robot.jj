@@ -130,7 +130,7 @@ void procedureDefinition() :
 {
   <DEFUN>(tokenFunName = <WORD>){
 	Robot.functionMap.put(tokenFunName.image, paramsList);
-    }(<LPAREN>(params(tokenFunName.image))<RPAREN>)(<LPAREN>instruction())+<RPAREN>
+    }(<LPAREN>(params(tokenFunName.image))<RPAREN>)(<LPAREN>instruction(false))+<RPAREN>
     {
       Robot.paramFunctionMap.clear();
     }
@@ -148,59 +148,57 @@ void params(String funName) :
 }
 
 /*Instructions*/
-void instruction() :
+void instruction(boolean runWorld) :
 {}
 {
-  (procedureCall()|parseCommand()|controlStructure())<RPAREN>
+  //TODO: Revisar si procedureCall necesita runWorld (creería que si porque dentro se pueden tener estructuras de control, en particular if's)
+  (procedureCall()|parseCommand(runWorld)|controlStructure(runWorld))<RPAREN>
 }
 
-void block() :
+void block(boolean runWorld) :
 {}
 {
-  <LPAREN>(<LPAREN>instruction())+<RPAREN>
+  <LPAREN>(<LPAREN>instruction(runWorld))+<RPAREN>
 }
 
+//TODO: Modificar para que en efecto corra la función
 void procedureCall() :
 {
   Token funName;
   List<String> paramTokens = new ArrayList<>();
 }
 {
-  (funName = <WORD>)(<NUM> | <CONSTANT> | varCall() //Cambié que no se retornara token en varCall(), pero esto debería funcionar porque
-  													//al leer el token en varCall() se actualiza la global token
-	{
-	  paramTokens.add(token.image);
-	}
-  )*
-	{
-	  if (paramTokens.size() != Robot.functionMap.get(funName.image).size()) {
-		throw new ParseException("Error: los parámetros de ingreso no coinciden con los esperados.");
-	    }	
-	}
-
-  
+  (funName = <WORD>)(<NUM>{paramTokens.add(token.image);}|
+  <CONSTANT>{paramTokens.add(token.image);}|
+  varCall(){paramTokens.add(token.image);})*
+  {
+    if (paramTokens.size() != Robot.functionMap.get(funName.image).size())
+    {
+      throw new ParseException("Error: La cantidad de parámetros ingresados no coincide con la cantidad esperada.");
+    }
+  }
 }
 
-void parseCommand() :
+void parseCommand(boolean runWorld) :
 {}
 {
-  (assign()
-  |move()
-  |skip()
-  |turn()
-  |face()
-  |put()
-  |pick()
-  |moveDir()
-  |runDirs()
-  |moveFace()
+  (assign(runWorld)
+  |move(runWorld)
+  |skip(runWorld)
+  |turn(runWorld)
+  |face(runWorld)
+  |put(runWorld)
+  |pick(runWorld)
+  |moveDir(runWorld)
+  |runDirs(runWorld)
+  |moveFace(runWorld)
   |nullCommand()
   )
   
 }
 
 /*Commands*/
-void assign():
+void assign(boolean runWorld):
 {
   String variableName;
   int variableValue;
@@ -217,17 +215,20 @@ void assign():
   }
   variableValue = value()
   {
-    Robot.variableMap.put(variableName, variableValue);
-    Robot.salida = "Command: variable assignment";
+    if (variableValue != -1 && runWorld)
+    {
+      Robot.variableMap.put(variableName, variableValue);
+      Robot.salida = "Command: variable assignment";
+    }
   }
 }
 
-void move():
+void move(boolean runWorld):
 {int numberSteps;}
 {
   < MOVE >numberSteps=value()
   {
-    if (numberSteps != -1)
+    if (numberSteps != -1 && runWorld)
     {
       world.moveForward(numberSteps, false);
       Robot.salida = "Command: move";
@@ -235,7 +236,7 @@ void move():
   }
 }
 
-void skip():
+void skip(boolean runWorld):
 {
   int numberValue;
 
@@ -243,18 +244,23 @@ void skip():
 {
   < ROBOTSKIP > numberValue = value()
   {
-    world.moveForward(numberValue, true);
-    Robot.salida = "Command: skip";
+    if (numberValue != -1 && runWorld)
+    {
+      world.moveForward(numberValue, true);
+      Robot.salida = "Command: skip";
+    }
   }
 }
 
-void turn():
+void turn(boolean runWorld):
 {String direction;}
 {
   < TURN >< DIRECTION >
   {
-    direction = token.image;
-	switch(direction) {
+    if (runWorld)
+    {
+      direction = token.image;
+      switch(direction) {
 	    case ":left":
 	        world.turnRight();
 	        world.turnRight();
@@ -269,70 +275,95 @@ void turn():
 	        break;
 	    default:
 	        throw new ParseException("Error: la dirección " + token.image + " no es válida con el comando turn.");
-	}
-	Robot.salida = "Command: turn";
+		}
+      Robot.salida = "Command: turn";
+    }
   }
 }
 
-void face():
-{String orientationTokenValue;
-int orientationValue = -1;
+void face(boolean runWorld):
+{
+  String orientationTokenValue;
+  int orientationValue = -1;
 }
 {
   < FACE >< ORIENTATION >
   {
-    orientationTokenValue = token.image;
-    if(orientationTokenValue.equals(":north")) {
-      orientationValue = 0;
-      } else if (orientationTokenValue.equals(":south")) {
+    if (runWorld)
+    {
+      orientationTokenValue = token.image;
+      if(orientationTokenValue.equals(":north"))
+      {
+        orientationValue = 0;
+      }
+      else if (orientationTokenValue.equals(":south"))
+      {
         orientationValue = 1;
-      } else if (orientationTokenValue.equals(":east")) {
+      }
+      else if (orientationTokenValue.equals(":east"))
+      {
         orientationValue = 2;
-      } else if (orientationTokenValue.equals(":west")) {
-		orientationValue = 3;
-        }
-     while (world.getFacing() != orientationValue) {
-       world.turnRight();
-       }
-       Robot.salida = "Command: face";
+      }
+      else if (orientationTokenValue.equals(":west"))
+      {
+        orientationValue = 3;
+      }
+      while (world.getFacing() != orientationValue)
+      {
+        world.turnRight();
+      }
+      Robot.salida = "Command: face";
+    }
   }
 }
 
-void put():
+void put(boolean runWorld):
 {
   Token itemToken;
   int numberItem;
-  }
+}
 {
   < PUT >(itemToken =  < ITEM >) numberItem=value()
   {
-    if (itemToken.image.equals(":balloons")) {
-      world.putBalloons(numberItem);
-      } else if (itemToken.image.equals(":chips")) {
+    if (numberItem != -1 && runWorld)
+    {
+      if (itemToken.image.equals(":balloons"))
+      {
+        world.putBalloons(numberItem);
+      }
+      else if (itemToken.image.equals(":chips"))
+      {
         world.putChips(numberItem);
-        }
-    Robot.salida = "Command: put";
+      }
+      Robot.salida = "Command: put";
+    }
   }
 }
 
-void pick():
+void pick(boolean runWorld):
 {
   Token itemToken;
   int numberItem;
-  }
+}
 {
   < PICK >(itemToken = < ITEM >) numberItem=value()
   {
-    if (itemToken.image.equals(":balloons")) {
-      world.grabBalloons(numberItem);
-      } else if (itemToken.image.equals(":chips")) {
+    if (numberItem != -1 && runWorld)
+    {
+      if (itemToken.image.equals(":balloons"))
+      {
+        world.grabBalloons(numberItem);
+      }
+      else if (itemToken.image.equals(":chips"))
+      {
         world.pickChips(numberItem);
-        }
-    Robot.salida = "Command: pick";
+      }
+      Robot.salida = "Command: pick";
+    }
   }
 }
 
-void moveDir():
+void moveDir(boolean runWorld):
 {
   Token itemToken;
   int initialOrientation;
@@ -341,33 +372,42 @@ void moveDir():
 {
   < MOVEDIR > numberItem=value()(itemToken = direction())
   {
-    //guardar orientacion inicial
-    initialOrientation = world.getFacing();
-	
-    if (itemToken.image.equals(":right")) {
-      world.turnRight();
-      world.moveForward(numberItem, false);
-      } else if (itemToken.image.equals(":left")) {
+    if (numberItem != -1 && runWorld)
+    {
+      //guardar orientacion inicial
+      initialOrientation = world.getFacing();
+      if (itemToken.image.equals(":right"))
+      {
+        world.turnRight();
+        world.moveForward(numberItem, false);
+      }
+      else if (itemToken.image.equals(":left"))
+      {
         world.turnRight();
         world.turnRight();
         world.turnRight();
         world.moveForward(numberItem, false);
-       } else if (itemToken.image.equals(":front")) {
-         world.moveForward(numberItem, false);
-         } else if (itemToken.image.equals(":back")) {
-		 world.turnRight();
-		 world.turnRight();
-         world.moveForward(numberItem, false);
-         }
-     //Volver a orientacion de inicio
-     while (world.getFacing() != initialOrientation) {
-       world.turnRight();
-       }
-    Robot.salida = "Command: move-dir";
+	  }
+	  else if (itemToken.image.equals(":front"))
+	  {
+	    world.moveForward(numberItem, false);
+	  }
+	  else if (itemToken.image.equals(":back"))
+	  {
+	    world.turnRight();
+	    world.turnRight();
+	    world.moveForward(numberItem, false);
+	  }//Volver a orientacion de inicio
+	  while (world.getFacing() != initialOrientation)
+	  {
+	    world.turnRight();
+	  }
+	  Robot.salida = "Command: move-dir";
+    }
   }
 }
 
-void runDirs():
+void runDirs(boolean runWorld):
 {
   List<String> directionsList = new ArrayList<>();
   Token directionReturn;
@@ -378,60 +418,81 @@ void runDirs():
     directionsList.add(directionReturn.image);
     })+
   {
-    for (String direction : directionsList) {
-
-      initialOrientation = world.getFacing();
-	
-     if (direction.equals(":right")) {
-      	world.turnRight();
-      	world.moveForward(1, false);
-      } else if (direction.equals(":left")) {
-        world.turnRight();
-        world.turnRight();
-        world.turnRight();
-        world.moveForward(1, false);
-       } else if (direction.equals(":front")) {
-         world.moveForward(1, false);
-         } else if (direction.equals(":back")) {
-		 world.turnRight();
-		 world.turnRight();
-         world.moveForward(1, false);
-         }
-     //Volver a orientacion de inicio
-     while (world.getFacing() != initialOrientation) {
-       world.turnRight();
-       }
+    if (runWorld)
+    {
+      for (String direction : directionsList)
+      {
+        initialOrientation = world.getFacing();
+        
+        if (direction.equals(":right"))
+        {
+          world.turnRight();
+          world.moveForward(1, false);
+        }
+        else if (direction.equals(":left"))
+        {
+          world.turnRight();
+          world.turnRight();
+          world.turnRight();
+          world.moveForward(1, false);
+        }
+        else if (direction.equals(":front"))
+        {
+          world.moveForward(1, false);
+        }
+        else if (direction.equals(":back"))
+        {
+          world.turnRight();
+          world.turnRight();
+          world.moveForward(1, false);
+        }
+		//Volver a orientacion de inicio
+        while (world.getFacing() != initialOrientation)
+        {
+          world.turnRight();
+        }
       }
-
       Robot.salida = "Command: rund dirs";
+    }
   }
 }
 
-void moveFace():
+void moveFace(boolean runWorld):
 {
   Token orientationToken;
   int moveValue;
   String orientationTokenValue;
   int orientationValue = -1;
-  }
+}
 {
   < MOVEFACE >moveValue = value()(orientationToken = < ORIENTATION >)
   {
-    orientationTokenValue = orientationToken.image;
-    if(orientationTokenValue.equals(":north")) {
-      orientationValue = 0;
-      } else if (orientationTokenValue.equals(":south")) {
+    if (moveValue != -1 && runWorld)
+    {
+      orientationTokenValue = orientationToken.image;
+      if(orientationTokenValue.equals(":north"))
+      {
+        orientationValue = 0;
+      }
+      else if (orientationTokenValue.equals(":south"))
+      {
         orientationValue = 1;
-      } else if (orientationTokenValue.equals(":east")) {
+      }
+      else if (orientationTokenValue.equals(":east"))
+      {
         orientationValue = 2;
-      } else if (orientationTokenValue.equals(":west")) {
-		orientationValue = 3;
-        }
-     while (world.getFacing() != orientationValue) {
-       world.turnRight();
-       }
-       world.moveForward(moveValue, false);
-       Robot.salida = "Command: move-face";
+      }
+      else if (orientationTokenValue.equals(":west"))
+      {
+        orientationValue = 3;
+      }
+      while (world.getFacing() != orientationValue)
+      {
+        world.turnRight();
+      }
+      world.moveForward(moveValue, false);
+      Robot.salida = "Command: move-face";
+    }
   }
 }
 
@@ -442,31 +503,52 @@ void nullCommand():
 }
 
 /*Control Structures*/
-void controlStructure() :
+void controlStructure(boolean runWorld) :
 {}
 {
-  (conditional()|repeat()|repeatTimes())
+  (conditional(runWorld)|repeat(runWorld)|repeatTimes(runWorld))
 }
 
-void repeat() :
+void repeat(boolean runWorld) :
 {}
 {
-  <LOOP>condition()(parseCommand()|block())
+  <LOOP>condition()(parseCommand(runWorld)|block(runWorld))
 }
 
-void repeatTimes() :
+void repeatTimes(boolean runWorld) :
 {}
 {
-  <REPEAT>value()(parseCommand()|block())
+  <REPEAT>value()(parseCommand(runWorld)|block(runWorld))
 }
 
 /*Conditionals*/
-void conditional() :
+void conditional(boolean runWorld) :
 {
   boolean conditionReturn;
 }
 {
-  <IF>(conditionReturn = condition())(block())(block())
+  //TODO: Revisar si condition necesita runWorld
+  <IF>(conditionReturn = condition())
+  {
+    if (runWorld)
+    {
+      if (conditionReturn)
+      {
+        block(true);
+        block(false);
+      }
+      else
+      {
+        block(false);
+        block(true);
+      }
+    }
+    else
+    {
+      block(false);
+      block(false);
+    }
+  }
 }
 
 boolean condition() :
@@ -632,8 +714,8 @@ Token direction():
 //Initial Rule
 boolean command(Console sistema):
 {}
-{
-	(<LPAREN>(varDefinition()|procedureDefinition()|instruction()) 
+{//TODO: Revisar var y procedure Definition para ver si se necesita runWorld
+	(<LPAREN>(varDefinition()|procedureDefinition()|instruction(true)) 
 	{
 	    try {
     			 Thread.sleep(900);
