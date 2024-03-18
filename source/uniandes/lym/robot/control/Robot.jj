@@ -515,10 +515,25 @@ void repeat(boolean runWorld) :
   <LOOP>condition()(parseCommand(runWorld)|block(runWorld))
 }
 
-void repeatTimes(boolean runWorld) :
-{}
+void repeatTimes(boolean runWorld):
 {
-  <REPEAT>value()(parseCommand(runWorld)|block(runWorld))
+  int value;
+}
+{
+  <REPEAT>value=value()
+  {
+    if (runWorld)
+    {
+      for (int i = 0; i < value; i++)
+      {
+        repeatTimesChoice(true);
+      }
+    }
+    else
+    {
+      repeatTimesChoice(false);
+    }
+  }
 }
 
 /*Conditionals*/
@@ -847,6 +862,13 @@ Token direction():
     }
     return directionToken;
   }
+}
+
+void repeatTimesChoice(boolean runWorld):
+{
+}
+{
+  (parseCommand(runWorld)|block(runWorld))
 }
 
 //Initial Rule

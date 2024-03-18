@@ -553,32 +553,19 @@ if (moveValue != -1 && runWorld)
     }
 }
 
-  final public void repeatTimes(boolean runWorld) throws ParseException {
+  final public void repeatTimes(boolean runWorld) throws ParseException {int value;
     jj_consume_token(REPEAT);
-    value();
-    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-    case ASSIGN:
-    case MOVE:
-    case ROBOTSKIP:
-    case TURN:
-    case FACE:
-    case PUT:
-    case PICK:
-    case MOVEDIR:
-    case RUNDIRS:
-    case MOVEFACE:
-    case NULL:{
-      parseCommand(runWorld);
-      break;
+    value = value();
+if (runWorld)
+    {
+      for (int i = 0; i < value; i++)
+      {
+        repeatTimesChoice(true);
       }
-    case LPAREN:{
-      block(runWorld);
-      break;
-      }
-    default:
-      jj_la1[10] = jj_gen;
-      jj_consume_token(-1);
-      throw new ParseException();
+    }
+    else
+    {
+      repeatTimesChoice(false);
     }
 }
 
@@ -638,7 +625,7 @@ if (runWorld)
       break;
       }
     default:
-      jj_la1[11] = jj_gen;
+      jj_la1[10] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -883,7 +870,7 @@ String image = token.image;
       break;
       }
     default:
-      jj_la1[12] = jj_gen;
+      jj_la1[11] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -899,6 +886,33 @@ if (!(token.image.equals(":front") || token.image.equals(":right") || token.imag
     }
     {if ("" != null) return directionToken;}
     throw new Error("Missing return statement in function");
+}
+
+  final public void repeatTimesChoice(boolean runWorld) throws ParseException {
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case ASSIGN:
+    case MOVE:
+    case ROBOTSKIP:
+    case TURN:
+    case FACE:
+    case PUT:
+    case PICK:
+    case MOVEDIR:
+    case RUNDIRS:
+    case MOVEFACE:
+    case NULL:{
+      parseCommand(runWorld);
+      break;
+      }
+    case LPAREN:{
+      block(runWorld);
+      break;
+      }
+    default:
+      jj_la1[12] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
 }
 
 //Initial Rule
@@ -990,10 +1004,10 @@ try {
 	   jj_la1_init_1();
 	}
 	private static void jj_la1_init_0() {
-	   jj_la1_0 = new int[] {0x0,0x0,0xe1ff60,0x0,0x80100000,0x80100000,0x1ff60,0x40000,0xe00000,0x1ff60,0x1ff60,0x7f000000,0x80100000,0xe1ff60,0x0,0x1,};
+	   jj_la1_0 = new int[] {0x0,0x0,0xe1ff60,0x0,0x80100000,0x80100000,0x1ff60,0x40000,0xe00000,0x1ff60,0x7f000000,0x80100000,0x1ff60,0xe1ff60,0x0,0x1,};
 	}
 	private static void jj_la1_init_1() {
-	   jj_la1_1 = new int[] {0x1,0x10,0x10,0x1,0x10,0x10,0x0,0x0,0x0,0x1,0x1,0x0,0x10,0x1c,0x1,0x1,};
+	   jj_la1_1 = new int[] {0x1,0x10,0x10,0x1,0x10,0x10,0x0,0x0,0x0,0x1,0x0,0x10,0x1,0x1c,0x1,0x1,};
 	}
 
   /** Constructor with InputStream. */
