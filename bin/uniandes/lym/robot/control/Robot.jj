@@ -535,20 +535,7 @@ void repeatTimes(boolean runWorld):
   {
     Robot.salida = "Command: repeatTimes";
   }
-  <REPEAT>value=value()
-  {
-    if (runWorld)
-    {
-      for (int i = 0; i < value; i++)
-      {
-        repeatTimesChoice(true);
-      }
-    }
-    else
-    {
-      repeatTimesChoice(false);
-    }
-  }
+  <REPEAT>value=value()(parseCommand(runWorld)|block(runWorld))
 }
 
 /*Conditionals*/
@@ -878,13 +865,6 @@ Token direction():
     }
     return directionToken;
   }
-}
-
-void repeatTimesChoice(boolean runWorld):
-{
-}
-{
-  (parseCommand(runWorld)|block(runWorld))
 }
 
 //Initial Rule
