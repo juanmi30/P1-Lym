@@ -28,6 +28,290 @@ public class Robot implements RobotConstants {
                 world = (RobotWorldDec) w;
         }
 
+        void runDirsMethod(List<String> list) {
+          int initialOrientation = 0;
+          String direction;
+          for(int i = 1; i < list.size(); i++) {
+            initialOrientation = world.getFacing();
+        direction = list.get(i);
+        if (direction.equals(":right"))
+        {
+          world.turnRight();
+          world.moveForward(1, false);
+        }
+        else if (direction.equals(":left"))
+        {
+          world.turnRight();
+          world.turnRight();
+          world.turnRight();
+          world.moveForward(1, false);
+        }
+        else if (direction.equals(":front"))
+        {
+          world.moveForward(1, false);
+        }
+        else if (direction.equals(":back"))
+        {
+          world.turnRight();
+          world.turnRight();
+          world.moveForward(1, false);
+        }
+                //Volver a orientacion de inicio
+        while (world.getFacing() != initialOrientation)
+        {
+          world.turnRight();
+        }
+
+            }
+          }
+          public void assignMethod(String x, String y) throws Error, ParseException
+        {
+          String variableName = x;
+          int variableValue = -1;
+          try
+          {
+            variableValue = Integer.parseInt(y);
+          }
+          catch (NumberFormatException ee)
+          {
+            throw new Error("Hay overflow con el valor: "+ y);
+          }
+
+          if (!Robot.variableMap.containsKey(variableName))
+          {
+            throw new ParseException("Error: La variable " + variableName + " no est\u00c3\u00a1 definida.");
+          }
+          if (variableValue != -1)
+          {
+            Robot.variableMap.put(variableName, variableValue);
+            Robot.salida = "Command: variable assignment";
+            }
+        }
+
+        public void moveMethod(String x) throws Error
+        {
+          int numberSteps = -1;
+          try
+          {
+            numberSteps = Integer.parseInt(x);
+          }
+          catch (NumberFormatException ee)
+          {
+            throw new Error("Hay overflow con el valor: "+x);
+          }
+          if (numberSteps != -1)
+          {
+            world.moveForward(numberSteps, false);
+            Robot.salida = "Command: move";
+          }
+        }
+
+        public void skipMethod(String x) throws Error
+        {
+          int numberValue = -1;
+          try
+          {
+            numberValue = Integer.parseInt(x);
+          }
+          catch (NumberFormatException ee)
+          {
+            throw new Error("Hay overflow con el valor: "+x);
+          }
+          if (numberValue != -1)
+          {
+            world.moveForward(numberValue, true);
+            Robot.salida = "Command: skip";
+          }
+        }
+
+        public void turnMethod(String x) throws ParseException
+        {
+          String direction = x;
+      switch(direction) {
+            case ":left":
+                world.turnRight();
+                world.turnRight();
+                world.turnRight();
+                break;
+            case ":right":
+                world.turnRight();
+                break;
+            case ":around":
+                world.turnRight();
+                world.turnRight();
+                break;
+            default:
+                throw new ParseException("Error: la direcci\u00c3\u00b3n " + direction + " no es v\u00c3\u00a1lida con el comando turn.");
+                }
+      Robot.salida = "Command: turn";
+        }
+
+        public void faceMethod(String x)
+        {
+          String orientationTokenValue = x;
+          int orientationValue = -1;
+      if(orientationTokenValue.equals(":north"))
+      {
+        orientationValue = 0;
+      }
+      else if (orientationTokenValue.equals(":south"))
+      {
+        orientationValue = 1;
+      }
+      else if (orientationTokenValue.equals(":east"))
+      {
+        orientationValue = 2;
+      }
+      else if (orientationTokenValue.equals(":west"))
+      {
+        orientationValue = 3;
+      }
+      while (world.getFacing() != orientationValue)
+      {
+        world.turnRight();
+      }
+      Robot.salida = "Command: face";
+        }
+
+        public void putMethod(String x, String y) throws Error
+        {
+          String item = x;
+          int numberItem = -1;
+          try
+          {
+            numberItem = Integer.parseInt(y);
+          }
+          catch (NumberFormatException ee)
+          {
+            throw new Error("Hay overflow con el valor: "+y);
+          }
+          if (numberItem != -1)
+          {
+            if (item.equals(":balloons"))
+            {
+              world.putBalloons(numberItem);
+            }
+            else if (item.equals(":chips"))
+            {
+              world.putChips(numberItem);
+            }
+            Robot.salida = "Command: put";
+          }
+        }
+
+        public void pickMethod(String x, String y) throws Error
+        {
+          String item = x;
+          int numberItem = -1;
+          try
+          {
+            numberItem = Integer.parseInt(y);
+          }
+          catch (NumberFormatException ee)
+          {
+            throw new Error("Hay overflow con el valor: "+y);
+          }
+          if (numberItem != -1)
+          {
+            if (item.equals(":balloons"))
+            {
+              world.grabBalloons(numberItem);
+            }
+            else if (item.equals(":chips"))
+            {
+              world.pickChips(numberItem);
+            }
+            Robot.salida = "Command: pick";
+          }
+        }
+
+        public void moveDirMethod(String x, String y) throws Error
+        {
+          String item = y;
+          int numberItem = -1;
+          try
+          {
+            numberItem = Integer.parseInt(x);
+          }
+          catch (NumberFormatException ee)
+          {
+            throw new Error("Hay overflow con el valor: "+x);
+          }
+          if (numberItem != -1)
+          {
+                //guardar orientacion inicial
+            int initialOrientation = world.getFacing();
+            if (item.equals(":right"))
+            {
+              world.turnRight();
+              world.moveForward(numberItem, false);
+            }
+            else if (item.equals(":left"))
+            {
+              world.turnRight();
+              world.turnRight();
+              world.turnRight();
+              world.moveForward(numberItem, false);
+            }
+            else if (item.equals(":front"))
+            {
+              world.moveForward(numberItem, false);
+            }
+            else if (item.equals(":back"))
+            {
+              world.turnRight();
+              world.turnRight();
+              world.moveForward(numberItem, false);
+            }
+            while (world.getFacing() != initialOrientation)
+            {
+                  //Volver a orientacion de inicio
+              world.turnRight();
+            }
+            Robot.salida = "Command: move-dir";
+          }
+        }
+
+        public void moveFaceMethod(String x, String y) throws Error
+        {
+          String orientation = y;
+          int moveValue = -1;
+          int orientationValue = -1;
+          try
+          {
+            moveValue = Integer.parseInt(x);
+          }
+          catch (NumberFormatException ee)
+          {
+            throw new Error("Hay overflow con el valor: "+x);
+          }
+          if (moveValue != -1)
+          {
+            if(orientation.equals(":north"))
+            {
+              orientationValue = 0;
+            }
+            else if (orientation.equals(":south"))
+            {
+              orientationValue = 1;
+            }
+            else if (orientation.equals(":east"))
+            {
+              orientationValue = 2;
+            }
+            else if (orientation.equals(":west"))
+            {
+              orientationValue = 3;
+            }
+            while (world.getFacing() != orientationValue)
+            {
+              world.turnRight();
+            }
+            world.moveForward(moveValue, false);
+            Robot.salida = "Command: move-face";
+          }
+        }
+
 /*Variable and Procedure Definitions*/
   final public void varDefinition() throws ParseException {Token variableName;
   int variableValue;
@@ -102,7 +386,7 @@ Robot.functionMap.get(funName).add(tokenParamName.image);
     case RUNDIRS:
     case MOVEFACE:
     case NULL:{
-      parseCommand(runWorld);
+      parseCommand(runWorld, null);
       break;
       }
     case IF:
@@ -211,46 +495,46 @@ if (paramTokens.size() != Robot.functionMap.get(funName.image).size())
     }
 }
 
-  final public void parseCommand(boolean runWorld) throws ParseException {
+  final public void parseCommand(boolean runWorld, List<String> list) throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case ASSIGN:{
-      assign(runWorld);
+      assign(runWorld, list);
       break;
       }
     case MOVE:{
-      move(runWorld);
+      move(runWorld, list);
       break;
       }
     case ROBOTSKIP:{
-      skip(runWorld);
+      skip(runWorld, list);
       break;
       }
     case TURN:{
-      turn(runWorld);
+      turn(runWorld, list);
       break;
       }
     case FACE:{
-      face(runWorld);
+      face(runWorld, list);
       break;
       }
     case PUT:{
-      put(runWorld);
+      put(runWorld, list);
       break;
       }
     case PICK:{
-      pick(runWorld);
+      pick(runWorld, list);
       break;
       }
     case MOVEDIR:{
-      moveDir(runWorld);
+      moveDir(runWorld, list);
       break;
       }
     case RUNDIRS:{
-      runDirs(runWorld);
+      runDirs(runWorld, list);
       break;
       }
     case MOVEFACE:{
-      moveFace(runWorld);
+      moveFace(runWorld, list);
       break;
       }
     case NULL:{
@@ -265,10 +549,12 @@ if (paramTokens.size() != Robot.functionMap.get(funName.image).size())
 }
 
 /*Commands*/
-  final public void assign(boolean runWorld) throws ParseException {String variableName;
+  final public void assign(boolean runWorld, List<String> list) throws ParseException {String variableName;
   int variableValue;
-    jj_consume_token(ASSIGN);
-    jj_consume_token(WORD);
+  Token assign;
+  Token word;
+    assign = jj_consume_token(ASSIGN);
+    word = jj_consume_token(WORD);
 variableName = token.image;
     if (!Robot.variableMap.containsKey(variableName))
     {
@@ -280,34 +566,53 @@ if (variableValue != -1 && runWorld)
       Robot.variableMap.put(variableName, variableValue);
       Robot.salida = "Command: variable assignment";
     }
+
+    if (list != null) {
+      list.add(assign.image);
+      list.add(word.image);
+      list.add(Integer.toString(variableValue));
+       }
 }
 
-  final public void move(boolean runWorld) throws ParseException {int numberSteps;
-    jj_consume_token(MOVE);
+  final public void move(boolean runWorld, List<String> list) throws ParseException {int numberSteps;
+Token moveToken;
+    moveToken = jj_consume_token(MOVE);
     numberSteps = value();
 if (numberSteps != -1 && runWorld)
     {
       world.moveForward(numberSteps, false);
       Robot.salida = "Command: move";
     }
+    if (list != null) {
+        list.add(moveToken.image);
+        list.add(Integer.toString(numberSteps));
+       }
 }
 
-  final public void skip(boolean runWorld) throws ParseException {int numberValue;
-    jj_consume_token(ROBOTSKIP);
+  final public void skip(boolean runWorld, List<String> list) throws ParseException {int numberValue;
+  Token robotSkip;
+    robotSkip = jj_consume_token(ROBOTSKIP);
     numberValue = value();
 if (numberValue != -1 && runWorld)
     {
       world.moveForward(numberValue, true);
       Robot.salida = "Command: skip";
     }
+
+    if (list != null) {
+      list.add(robotSkip.image);
+      list.add(Integer.toString(numberValue));
+      }
 }
 
-  final public void turn(boolean runWorld) throws ParseException {String direction;
-    jj_consume_token(TURN);
-    jj_consume_token(DIRECTION);
+  final public void turn(boolean runWorld, List<String> list) throws ParseException {String direction;
+Token turn;
+Token directionToken;
+    turn = jj_consume_token(TURN);
+    directionToken = jj_consume_token(DIRECTION);
 if (runWorld)
     {
-      direction = token.image;
+      direction = directionToken.image;
       switch(direction) {
             case ":left":
                 world.turnRight();
@@ -326,15 +631,22 @@ if (runWorld)
                 }
       Robot.salida = "Command: turn";
     }
+
+    if (list != null) {
+      list.add(turn.image);
+      list.add(directionToken.image);
+      }
 }
 
-  final public void face(boolean runWorld) throws ParseException {String orientationTokenValue;
+  final public void face(boolean runWorld, List<String> list) throws ParseException {String orientationTokenValue;
   int orientationValue = -1;
-    jj_consume_token(FACE);
-    jj_consume_token(ORIENTATION);
+  Token face;
+  Token orientation;
+    face = jj_consume_token(FACE);
+    orientation = jj_consume_token(ORIENTATION);
 if (runWorld)
     {
-      orientationTokenValue = token.image;
+      orientationTokenValue = orientation.image;
       if(orientationTokenValue.equals(":north"))
       {
         orientationValue = 0;
@@ -357,11 +669,17 @@ if (runWorld)
       }
       Robot.salida = "Command: face";
     }
+
+    if (list != null) {
+      list.add(face.image);
+      list.add(orientation.image);
+      }
 }
 
-  final public void put(boolean runWorld) throws ParseException {Token itemToken;
+  final public void put(boolean runWorld, List<String> list) throws ParseException {Token itemToken;
   int numberItem;
-    jj_consume_token(PUT);
+  Token put;
+    put = jj_consume_token(PUT);
     itemToken = jj_consume_token(ITEM);
     numberItem = value();
 if (numberItem != -1 && runWorld)
@@ -376,11 +694,18 @@ if (numberItem != -1 && runWorld)
       }
       Robot.salida = "Command: put";
     }
+
+    if (list != null) {
+      list.add(put.image);
+      list.add(itemToken.image);
+      list.add(Integer.toString(numberItem));
+      }
 }
 
-  final public void pick(boolean runWorld) throws ParseException {Token itemToken;
+  final public void pick(boolean runWorld, List<String> list) throws ParseException {Token itemToken;
   int numberItem;
-    jj_consume_token(PICK);
+  Token pick;
+    pick = jj_consume_token(PICK);
     itemToken = jj_consume_token(ITEM);
     numberItem = value();
 if (numberItem != -1 && runWorld)
@@ -395,12 +720,18 @@ if (numberItem != -1 && runWorld)
       }
       Robot.salida = "Command: pick";
     }
+    if (list != null) {
+      list.add(pick.image);
+      list.add(itemToken.image);
+      list.add(Integer.toString(numberItem));
+      }
 }
 
-  final public void moveDir(boolean runWorld) throws ParseException {Token itemToken;
+  final public void moveDir(boolean runWorld, List<String> list) throws ParseException {Token itemToken;
   int initialOrientation;
   int numberItem;
-    jj_consume_token(MOVEDIR);
+  Token moveDir;
+    moveDir = jj_consume_token(MOVEDIR);
     numberItem = value();
     itemToken = direction();
 if (numberItem != -1 && runWorld)
@@ -435,12 +766,18 @@ if (numberItem != -1 && runWorld)
           }
           Robot.salida = "Command: move-dir";
     }
+    if (list != null) {
+      list.add(moveDir.image);
+      list.add(Integer.toString(numberItem));
+      list.add(itemToken.image);
+      }
 }
 
-  final public void runDirs(boolean runWorld) throws ParseException {List<String> directionsList = new ArrayList<>();
+  final public void runDirs(boolean runWorld, List<String> list) throws ParseException {List<String> directionsList = new ArrayList<>();
   Token directionReturn;
   int initialOrientation;
-    jj_consume_token(RUNDIRS);
+  Token runDirs;
+    runDirs = jj_consume_token(RUNDIRS);
     label_5:
     while (true) {
       directionReturn = direction();
@@ -491,13 +828,21 @@ if (runWorld)
       }
       Robot.salida = "Command: rund dirs";
     }
+
+    if (list != null) {
+      list.add(runDirs.image);
+      for  (String direction : directionsList) {
+        list.add(direction);
+        }
+      }
 }
 
-  final public void moveFace(boolean runWorld) throws ParseException {Token orientationToken;
+  final public void moveFace(boolean runWorld, List<String> list) throws ParseException {Token orientationToken;
   int moveValue;
   String orientationTokenValue;
   int orientationValue = -1;
-    jj_consume_token(MOVEFACE);
+  Token moveFace;
+    moveFace = jj_consume_token(MOVEFACE);
     moveValue = value();
     orientationToken = jj_consume_token(ORIENTATION);
 if (moveValue != -1 && runWorld)
@@ -526,6 +871,11 @@ if (moveValue != -1 && runWorld)
       world.moveForward(moveValue, false);
       Robot.salida = "Command: move-face";
     }
+    if (list != null) {
+      list.add(moveFace.image);
+      list.add(Integer.toString(moveValue));
+      list.add(orientationToken.image);
+      }
 }
 
   final public void nullCommand() throws ParseException {
@@ -571,7 +921,7 @@ Robot.salida = "Command: repeat";
     case RUNDIRS:
     case MOVEFACE:
     case NULL:{
-      parseCommand(runWorld);
+      parseCommand(runWorld, null);
       break;
       }
     case LPAREN:{
@@ -586,33 +936,42 @@ Robot.salida = "Command: repeat";
 }
 
   final public void repeatTimes(boolean runWorld) throws ParseException {int value;
+  List<String> list = new ArrayList<>();
+  int contador = 0;
+  String comandoActual;
 Robot.salida = "Command: repeatTimes";
     jj_consume_token(REPEAT);
     value = value();
-    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-    case ASSIGN:
-    case MOVE:
-    case ROBOTSKIP:
-    case TURN:
-    case FACE:
-    case PUT:
-    case PICK:
-    case MOVEDIR:
-    case RUNDIRS:
-    case MOVEFACE:
-    case NULL:{
-      parseCommand(runWorld);
-      break;
+    jj_consume_token(LPAREN);
+    parseCommand(false, list);
+    jj_consume_token(RPAREN);
+while (contador < value) {
+      comandoActual = list.get(0);
+      if (comandoActual.equals("move")) {
+        moveMethod(list.get(1));
+        } else if (comandoActual.equals("=")) {
+        assignMethod(list.get(1), list.get(2));
+        } else if (comandoActual.equals("skip")) {
+        skipMethod(list.get(1));
+        } else if (comandoActual.equals("turn")) {
+                turnMethod(list.get(1));
+        } else if (comandoActual.equals("face")) {
+        faceMethod(list.get(1));
+        } else if (comandoActual.equals("put")) {
+                putMethod(list.get(1), list.get(2));
+        } else if (comandoActual.equals("pick")) {
+                pickMethod(list.get(1), list.get(2));
+        } else if (comandoActual.equals("move-dir")) {
+                moveDirMethod(list.get(1), list.get(2));
+        } else if (comandoActual.equals("run-dirs")) {
+                runDirsMethod(list);
+        } else if (comandoActual.equals("move-face")) {
+                moveFaceMethod(list.get(1), list.get(2));
+        } else {
+        System.out.println("._.");
+          }
+          contador +=1;
       }
-    case LPAREN:{
-      block(runWorld);
-      break;
-      }
-    default:
-      jj_la1[11] = jj_gen;
-      jj_consume_token(-1);
-      throw new ParseException();
-    }
 }
 
 /*Conditionals*/
@@ -672,7 +1031,7 @@ if (runWorld)
       break;
       }
     default:
-      jj_la1[12] = jj_gen;
+      jj_la1[11] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -918,7 +1277,7 @@ String image = token.image;
       break;
       }
     default:
-      jj_la1[13] = jj_gen;
+      jj_la1[12] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -971,7 +1330,7 @@ if (!(token.image.equals(":front") || token.image.equals(":right") || token.imag
           break;
           }
         default:
-          jj_la1[14] = jj_gen;
+          jj_la1[13] = jj_gen;
           jj_consume_token(-1);
           throw new ParseException();
         }
@@ -989,7 +1348,7 @@ try {
           break;
           }
         default:
-          jj_la1[15] = jj_gen;
+          jj_la1[14] = jj_gen;
           break label_6;
         }
       }
@@ -1001,7 +1360,7 @@ try {
       break;
       }
     default:
-      jj_la1[16] = jj_gen;
+      jj_la1[15] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -1017,7 +1376,7 @@ try {
   public Token jj_nt;
   private int jj_ntk;
   private int jj_gen;
-  final private int[] jj_la1 = new int[17];
+  final private int[] jj_la1 = new int[16];
   static private int[] jj_la1_0;
   static private int[] jj_la1_1;
   static {
@@ -1025,10 +1384,10 @@ try {
 	   jj_la1_init_1();
 	}
 	private static void jj_la1_init_0() {
-	   jj_la1_0 = new int[] {0x0,0x0,0xe1ff60,0x0,0xe1ff60,0x80100000,0x80100000,0x1ff60,0x40000,0xe00000,0x1ff60,0x1ff60,0x7f000000,0x80100000,0xe1ff60,0x0,0x1,};
+	   jj_la1_0 = new int[] {0x0,0x0,0xe1ff60,0x0,0xe1ff60,0x80100000,0x80100000,0x1ff60,0x40000,0xe00000,0x1ff60,0x7f000000,0x80100000,0xe1ff60,0x0,0x1,};
 	}
 	private static void jj_la1_init_1() {
-	   jj_la1_1 = new int[] {0x1,0x10,0x10,0x1,0x11,0x10,0x10,0x0,0x0,0x0,0x1,0x1,0x0,0x10,0x1c,0x1,0x1,};
+	   jj_la1_1 = new int[] {0x1,0x10,0x10,0x1,0x11,0x10,0x10,0x0,0x0,0x0,0x1,0x0,0x10,0x1c,0x1,0x1,};
 	}
 
   /** Constructor with InputStream. */
@@ -1042,7 +1401,7 @@ try {
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 17; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 16; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -1056,7 +1415,7 @@ try {
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 17; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 16; i++) jj_la1[i] = -1;
   }
 
   /** Constructor. */
@@ -1066,7 +1425,7 @@ try {
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 17; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 16; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -1084,7 +1443,7 @@ try {
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 17; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 16; i++) jj_la1[i] = -1;
   }
 
   /** Constructor with generated Token Manager. */
@@ -1093,7 +1452,7 @@ try {
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 17; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 16; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -1102,7 +1461,7 @@ try {
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 17; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 16; i++) jj_la1[i] = -1;
   }
 
   private Token jj_consume_token(int kind) throws ParseException {
@@ -1158,7 +1517,7 @@ try {
 	   la1tokens[jj_kind] = true;
 	   jj_kind = -1;
 	 }
-	 for (int i = 0; i < 17; i++) {
+	 for (int i = 0; i < 16; i++) {
 	   if (jj_la1[i] == jj_gen) {
 		 for (int j = 0; j < 32; j++) {
 		   if ((jj_la1_0[i] & (1<<j)) != 0) {

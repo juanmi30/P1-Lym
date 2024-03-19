@@ -48,6 +48,290 @@ public class Robot
 	void setWorld(RobotWorld w) {
 		world = (RobotWorldDec) w;	
 	}
+
+	void runDirsMethod(List<String> list) {
+	  int initialOrientation = 0;
+	  String direction;
+	  for(int i = 1; i < list.size(); i++) {
+	    initialOrientation = world.getFacing();
+        direction = list.get(i);
+        if (direction.equals(":right"))
+        {
+          world.turnRight();
+          world.moveForward(1, false);
+        }
+        else if (direction.equals(":left"))
+        {
+          world.turnRight();
+          world.turnRight();
+          world.turnRight();
+          world.moveForward(1, false);
+        }
+        else if (direction.equals(":front"))
+        {
+          world.moveForward(1, false);
+        }
+        else if (direction.equals(":back"))
+        {
+          world.turnRight();
+          world.turnRight();
+          world.moveForward(1, false);
+        }
+		//Volver a orientacion de inicio
+        while (world.getFacing() != initialOrientation)
+        {
+          world.turnRight();
+        }
+
+	    }
+	  }
+	  public void assignMethod(String x, String y) throws Error, ParseException
+	{
+	  String variableName = x;
+	  int variableValue = -1;
+	  try
+	  {
+	    variableValue = Integer.parseInt(y);
+	  }
+	  catch (NumberFormatException ee)
+	  {
+	    throw new Error("Hay overflow con el valor: "+ y);
+	  }
+	  
+	  if (!Robot.variableMap.containsKey(variableName))
+	  {
+	    throw new ParseException("Error: La variable " + variableName + " no está definida.");
+	  }
+	  if (variableValue != -1)
+	  {
+	    Robot.variableMap.put(variableName, variableValue);
+	    Robot.salida = "Command: variable assignment";
+	    }
+	}
+
+	public void moveMethod(String x) throws Error
+	{
+	  int numberSteps = -1;
+	  try
+	  {
+	    numberSteps = Integer.parseInt(x);
+	  }
+	  catch (NumberFormatException ee)
+	  {
+	    throw new Error("Hay overflow con el valor: "+x);
+	  }
+	  if (numberSteps != -1)
+	  {
+	    world.moveForward(numberSteps, false);
+	    Robot.salida = "Command: move";
+	  }
+	}
+
+	public void skipMethod(String x) throws Error
+	{
+	  int numberValue = -1;
+	  try
+	  {
+	    numberValue = Integer.parseInt(x);
+	  }
+	  catch (NumberFormatException ee)
+	  {
+	    throw new Error("Hay overflow con el valor: "+x);
+	  }
+	  if (numberValue != -1)
+	  {
+	    world.moveForward(numberValue, true);
+	    Robot.salida = "Command: skip";
+	  }
+	}
+
+	public void turnMethod(String x) throws ParseException
+	{
+	  String direction = x;
+      switch(direction) {
+	    case ":left":
+	        world.turnRight();
+	        world.turnRight();
+	        world.turnRight();
+	        break;
+	    case ":right":
+	        world.turnRight();
+	        break;
+	    case ":around":
+	        world.turnRight();
+	        world.turnRight();
+	        break;
+	    default:
+	        throw new ParseException("Error: la dirección " + direction + " no es válida con el comando turn.");
+		}
+      Robot.salida = "Command: turn";
+	}
+
+	public void faceMethod(String x)
+	{
+	  String orientationTokenValue = x;
+	  int orientationValue = -1;
+      if(orientationTokenValue.equals(":north"))
+      {
+        orientationValue = 0;
+      }
+      else if (orientationTokenValue.equals(":south"))
+      {
+        orientationValue = 1;
+      }
+      else if (orientationTokenValue.equals(":east"))
+      {
+        orientationValue = 2;
+      }
+      else if (orientationTokenValue.equals(":west"))
+      {
+        orientationValue = 3;
+      }
+      while (world.getFacing() != orientationValue)
+      {
+        world.turnRight();
+      }
+      Robot.salida = "Command: face";
+	}
+
+	public void putMethod(String x, String y) throws Error
+	{
+	  String item = x;
+	  int numberItem = -1;
+	  try
+	  {
+	    numberItem = Integer.parseInt(y);
+	  }
+	  catch (NumberFormatException ee)
+	  {
+	    throw new Error("Hay overflow con el valor: "+y);
+	  }
+	  if (numberItem != -1)
+	  {
+	    if (item.equals(":balloons"))
+	    {
+	      world.putBalloons(numberItem);
+	    }
+	    else if (item.equals(":chips"))
+	    {
+	      world.putChips(numberItem);
+	    }
+	    Robot.salida = "Command: put";
+	  }
+	}
+
+	public void pickMethod(String x, String y) throws Error
+	{
+	  String item = x;
+	  int numberItem = -1;
+	  try
+	  {
+	    numberItem = Integer.parseInt(y);
+	  }
+	  catch (NumberFormatException ee)
+	  {
+	    throw new Error("Hay overflow con el valor: "+y);
+	  }
+	  if (numberItem != -1)
+	  {
+	    if (item.equals(":balloons"))
+	    {
+	      world.grabBalloons(numberItem);
+	    }
+	    else if (item.equals(":chips"))
+	    {
+	      world.pickChips(numberItem);
+	    }
+	    Robot.salida = "Command: pick";
+	  }
+	}
+
+	public void moveDirMethod(String x, String y) throws Error
+	{
+	  String item = y;
+	  int numberItem = -1;
+	  try
+	  {
+	    numberItem = Integer.parseInt(x);
+	  }
+	  catch (NumberFormatException ee)
+	  {
+	    throw new Error("Hay overflow con el valor: "+x);
+	  }
+	  if (numberItem != -1)
+	  {
+		//guardar orientacion inicial
+	    int initialOrientation = world.getFacing();
+	    if (item.equals(":right"))
+	    {
+	      world.turnRight();
+	      world.moveForward(numberItem, false);
+	    }
+	    else if (item.equals(":left"))
+	    {
+	      world.turnRight();
+	      world.turnRight();
+	      world.turnRight();
+	      world.moveForward(numberItem, false);
+	    }
+	    else if (item.equals(":front"))
+	    {
+	      world.moveForward(numberItem, false);
+	    }
+	    else if (item.equals(":back"))
+	    {
+	      world.turnRight();
+	      world.turnRight();
+	      world.moveForward(numberItem, false);
+	    }
+	    while (world.getFacing() != initialOrientation)
+	    {
+		  //Volver a orientacion de inicio
+	      world.turnRight();
+	    }
+	    Robot.salida = "Command: move-dir";
+	  }
+	}
+
+	public void moveFaceMethod(String x, String y) throws Error
+	{
+	  String orientation = y;
+	  int moveValue = -1;
+	  int orientationValue = -1;
+	  try
+	  {
+	    moveValue = Integer.parseInt(x);
+	  }
+	  catch (NumberFormatException ee)
+	  {
+	    throw new Error("Hay overflow con el valor: "+x);
+	  }
+	  if (moveValue != -1)
+	  {
+	    if(orientation.equals(":north"))
+	    {
+	      orientationValue = 0;
+	    }
+	    else if (orientation.equals(":south"))
+	    {
+	      orientationValue = 1;
+	    }
+	    else if (orientation.equals(":east"))
+	    {
+	      orientationValue = 2;
+	    }
+	    else if (orientation.equals(":west"))
+	    {
+	      orientationValue = 3;
+	    }
+	    while (world.getFacing() != orientationValue)
+	    {
+	      world.turnRight();
+	    }
+	    world.moveForward(moveValue, false);
+	    Robot.salida = "Command: move-face";
+	  }
+	}
 }
 PARSER_END(Robot)
 
@@ -155,7 +439,7 @@ void instruction(boolean runWorld) :
 {}
 {
   //TODO: Revisar si procedureCall necesita runWorld (creería que si porque dentro se pueden tener estructuras de control, en particular if's)
-  (procedureCall()|parseCommand(runWorld)|controlStructure(runWorld))<RPAREN>
+  (procedureCall()|parseCommand(runWorld, null)|controlStructure(runWorld))<RPAREN>
 }
 
 void block(boolean runWorld) :
@@ -185,32 +469,34 @@ void procedureCall() :
   }
 }
 
-void parseCommand(boolean runWorld) :
+void parseCommand(boolean runWorld, List<String> list) :
 {}
 {
-  (assign(runWorld)
-  |move(runWorld)
-  |skip(runWorld)
-  |turn(runWorld)
-  |face(runWorld)
-  |put(runWorld)
-  |pick(runWorld)
-  |moveDir(runWorld)
-  |runDirs(runWorld)
-  |moveFace(runWorld)
+  (assign(runWorld, list)
+  |move(runWorld, list)
+  |skip(runWorld, list)
+  |turn(runWorld, list)
+  |face(runWorld, list)
+  |put(runWorld, list)
+  |pick(runWorld, list)
+  |moveDir(runWorld, list)
+  |runDirs(runWorld, list)
+  |moveFace(runWorld, list)
   |nullCommand()
   )
   
 }
 
 /*Commands*/
-void assign(boolean runWorld):
+void assign(boolean runWorld, List<String> list):
 {
   String variableName;
   int variableValue;
+  Token assign;
+  Token word;
 }
 {
-  < ASSIGN >< WORD >
+  assign = < ASSIGN > word =< WORD >
   //No se llama varCall() porque permitiría que se hiciera assign sobre el parámetro de una función
   {
     variableName = token.image;
@@ -226,46 +512,67 @@ void assign(boolean runWorld):
       Robot.variableMap.put(variableName, variableValue);
       Robot.salida = "Command: variable assignment";
     }
+
+    if (list != null) {
+      list.add(assign.image);
+      list.add(word.image);
+      list.add(Integer.toString(variableValue));
+       }
   }
 }
 
-void move(boolean runWorld):
-{int numberSteps;}
+void move(boolean runWorld, List<String> list):
+{int numberSteps;
+Token moveToken;
+}
 {
-  < MOVE >numberSteps=value()
+  moveToken = < MOVE >numberSteps=value()
   {
     if (numberSteps != -1 && runWorld)
     {
       world.moveForward(numberSteps, false);
       Robot.salida = "Command: move";
     }
+    if (list != null) {
+    	list.add(moveToken.image);
+    	list.add(Integer.toString(numberSteps));
+       }
   }
 }
 
-void skip(boolean runWorld):
+void skip(boolean runWorld, List<String> list):
 {
   int numberValue;
+  Token robotSkip;
 
 }
 {
-  < ROBOTSKIP > numberValue = value()
+ robotSkip = < ROBOTSKIP > numberValue = value()
   {
     if (numberValue != -1 && runWorld)
     {
       world.moveForward(numberValue, true);
       Robot.salida = "Command: skip";
     }
+
+    if (list != null) {
+      list.add(robotSkip.image);
+      list.add(Integer.toString(numberValue));
+      }
   }
 }
 
-void turn(boolean runWorld):
-{String direction;}
+void turn(boolean runWorld, List<String> list):
+{String direction;
+Token turn;
+Token directionToken;
+}
 {
-  < TURN >< DIRECTION >
+  turn = < TURN > directionToken =< DIRECTION >
   {
     if (runWorld)
     {
-      direction = token.image;
+      direction = directionToken.image;
       switch(direction) {
 	    case ":left":
 	        world.turnRight();
@@ -284,20 +591,27 @@ void turn(boolean runWorld):
 		}
       Robot.salida = "Command: turn";
     }
+
+    if (list != null) {
+      list.add(turn.image);
+      list.add(directionToken.image);
+      }
   }
 }
 
-void face(boolean runWorld):
+void face(boolean runWorld, List<String> list):
 {
   String orientationTokenValue;
   int orientationValue = -1;
+  Token face;
+  Token orientation;
 }
 {
-  < FACE >< ORIENTATION >
+ face = < FACE > orientation = < ORIENTATION >
   {
     if (runWorld)
     {
-      orientationTokenValue = token.image;
+      orientationTokenValue = orientation.image;
       if(orientationTokenValue.equals(":north"))
       {
         orientationValue = 0;
@@ -320,16 +634,22 @@ void face(boolean runWorld):
       }
       Robot.salida = "Command: face";
     }
+
+    if (list != null) {
+      list.add(face.image);
+      list.add(orientation.image);
+      }
   }
 }
 
-void put(boolean runWorld):
+void put(boolean runWorld, List<String> list):
 {
   Token itemToken;
   int numberItem;
+  Token put;
 }
 {
-  < PUT >(itemToken =  < ITEM >) numberItem=value()
+ put = < PUT >(itemToken =  < ITEM >) numberItem=value()
   {
     if (numberItem != -1 && runWorld)
     {
@@ -343,16 +663,23 @@ void put(boolean runWorld):
       }
       Robot.salida = "Command: put";
     }
+
+    if (list != null) {
+      list.add(put.image);
+      list.add(itemToken.image);
+      list.add(Integer.toString(numberItem));
+      }
   }
 }
 
-void pick(boolean runWorld):
+void pick(boolean runWorld, List<String> list):
 {
   Token itemToken;
   int numberItem;
+  Token pick;
 }
 {
-  < PICK >(itemToken = < ITEM >) numberItem=value()
+  pick = < PICK >(itemToken = < ITEM >) numberItem=value()
   {
     if (numberItem != -1 && runWorld)
     {
@@ -366,17 +693,23 @@ void pick(boolean runWorld):
       }
       Robot.salida = "Command: pick";
     }
+    if (list != null) {
+      list.add(pick.image);
+      list.add(itemToken.image);
+      list.add(Integer.toString(numberItem));
+      }
   }
 }
 
-void moveDir(boolean runWorld):
+void moveDir(boolean runWorld, List<String> list):
 {
   Token itemToken;
   int initialOrientation;
   int numberItem;
+  Token moveDir;
   }
 {
-  < MOVEDIR > numberItem=value()(itemToken = direction())
+ moveDir = < MOVEDIR > numberItem=value()(itemToken = direction())
   {
     if (numberItem != -1 && runWorld)
     {
@@ -410,17 +743,23 @@ void moveDir(boolean runWorld):
 	  }
 	  Robot.salida = "Command: move-dir";
     }
+    if (list != null) {
+      list.add(moveDir.image);
+      list.add(Integer.toString(numberItem));
+      list.add(itemToken.image);
+      }
   }
 }
 
-void runDirs(boolean runWorld):
+void runDirs(boolean runWorld, List<String> list):
 {
   List<String> directionsList = new ArrayList<>();
   Token directionReturn;
   int initialOrientation;
+  Token runDirs;
 }
 {
-  < RUNDIRS >(directionReturn = direction() {
+ runDirs = < RUNDIRS >(directionReturn = direction() {
     directionsList.add(directionReturn.image);
     })+
   {
@@ -460,18 +799,26 @@ void runDirs(boolean runWorld):
       }
       Robot.salida = "Command: rund dirs";
     }
+
+    if (list != null) {
+      list.add(runDirs.image);
+      for  (String direction : directionsList) {
+        list.add(direction);
+        }
+      }
   }
 }
 
-void moveFace(boolean runWorld):
+void moveFace(boolean runWorld, List<String> list):
 {
   Token orientationToken;
   int moveValue;
   String orientationTokenValue;
   int orientationValue = -1;
+  Token moveFace;
 }
 {
-  < MOVEFACE >moveValue = value()(orientationToken = < ORIENTATION >)
+  moveFace = < MOVEFACE >moveValue = value()(orientationToken = < ORIENTATION >)
   {
     if (moveValue != -1 && runWorld)
     {
@@ -499,6 +846,11 @@ void moveFace(boolean runWorld):
       world.moveForward(moveValue, false);
       Robot.salida = "Command: move-face";
     }
+    if (list != null) {
+      list.add(moveFace.image);
+      list.add(Integer.toString(moveValue));
+      list.add(orientationToken.image);
+      }
   }
 }
 
@@ -524,18 +876,51 @@ void repeat(boolean runWorld) :
   {
     Robot.salida = "Command: repeat";
   }
-  <LOOP>condition()(parseCommand(runWorld)|block(runWorld))
+  <LOOP>condition()(parseCommand(runWorld, null)|block(runWorld))
 }
 
 void repeatTimes(boolean runWorld):
 {
   int value;
+  List<String> list = new ArrayList<>();
+  int contador = 0;
+  String comandoActual;
 }
 {
   {
     Robot.salida = "Command: repeatTimes";
   }
-  <REPEAT>value=value()(parseCommand(runWorld)|block(runWorld))
+  <REPEAT>value=value()(<LPAREN>parseCommand(false, list)<RPAREN>)
+
+  {
+    while (contador < value) {
+      comandoActual = list.get(0);
+      if (comandoActual.equals("move")) {
+        moveMethod(list.get(1));
+        } else if (comandoActual.equals("=")) {
+        assignMethod(list.get(1), list.get(2));
+        } else if (comandoActual.equals("skip")) {
+        skipMethod(list.get(1));    
+        } else if (comandoActual.equals("turn")) {
+		turnMethod(list.get(1));
+        } else if (comandoActual.equals("face")) {
+        faceMethod(list.get(1)); 
+        } else if (comandoActual.equals("put")) {
+		putMethod(list.get(1), list.get(2));
+        } else if (comandoActual.equals("pick")) {
+		pickMethod(list.get(1), list.get(2));
+        } else if (comandoActual.equals("move-dir")) {
+		moveDirMethod(list.get(1), list.get(2));
+        } else if (comandoActual.equals("run-dirs")) {
+		runDirsMethod(list);
+        } else if (comandoActual.equals("move-face")) {
+		moveFaceMethod(list.get(1), list.get(2));
+        } else {
+        System.out.println("._.");
+          }
+          contador +=1;
+      }
+  }
 }
 
 /*Conditionals*/
