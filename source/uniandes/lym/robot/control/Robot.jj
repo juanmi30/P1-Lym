@@ -158,7 +158,7 @@ void instruction(boolean runWorld) :
 void block(boolean runWorld) :
 {}
 {
-  <LPAREN>(<LPAREN>instruction(runWorld))+<RPAREN>
+  <LPAREN>((<LPAREN>instruction(runWorld))+<RPAREN>|instruction(runWorld))
 }
 
 //TODO: Modificar para que en efecto corra la función
@@ -623,7 +623,7 @@ boolean blockedCondition() :
   <BLOCKED>
   {
     orientationValue = world.getFacing();
-    position = world.getPosition();
+    position = (Point) world.getPosition().clone();
     if (orientationValue == 0) {
       position.y -= 1;
      } else if (orientationValue == 1) {
@@ -699,14 +699,14 @@ boolean canpickCondition():
     }
   }
 }
-
+//(if (can-move? :south)(move-face 3 :south)(null))
 boolean canmoveCondition() :
 {
   boolean outOfBounds = false;
   boolean canMove = false;
   Token tokenOrientation;
   String orientationTokenValue;
-  Point position = world.getPosition();
+  Point currentPosition = (Point) world.getPosition().clone();
 }
 {
  <CANMOVE>(tokenOrientation = <ORIENTATION>)
@@ -714,39 +714,39 @@ boolean canmoveCondition() :
  {
    orientationTokenValue = tokenOrientation.image;
    if(orientationTokenValue.equals(":north")) {
-      position.y -= 1;
+      currentPosition.y -= 1;
       
       //comprobar si está dentro del tablero
-    if (position.y > world.getN() || position.y < 1) {
+    if (currentPosition.y > world.getN() || currentPosition.y < 1) {
       outOfBounds = true;
       }
         
       } else if (orientationTokenValue.equals(":south")) {
-        position.y += 1;
+        currentPosition.y += 1;
 
         //comprobar si está dentro del tablero
-    	if (position.y > world.getN() || position.y < 1) {
+    	if (currentPosition.y > world.getN() || currentPosition.y < 1) {
       		outOfBounds = true;
       		}
         
       } else if (orientationTokenValue.equals(":east")) {
-        position.x += 1;
+        currentPosition.x += 1;
         
-        if (position.x > world.getN() || position.x < 1) {
+        if (currentPosition.x > world.getN() || currentPosition.x < 1) {
       		outOfBounds = true;
       	}
         
       } else if (orientationTokenValue.equals(":west")) {
-		position.x -= 1;
+		currentPosition.x -= 1;
 
 		//comprobar si está dentro del tablero
-		if (position.x > world.getN() || position.x < 1) {
+		if (currentPosition.x > world.getN() || currentPosition.x < 1) {
       		outOfBounds = true;
       	}
         }
         
     //comprobar isBlocked
-    if (!world.isBlocked(position) && !outOfBounds) {
+    if (!world.isBlocked(currentPosition) && !outOfBounds) {
       canMove = true;
       }
         

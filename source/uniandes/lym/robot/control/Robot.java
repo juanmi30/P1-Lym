@@ -119,21 +119,48 @@ Robot.functionMap.get(funName).add(tokenParamName.image);
 
   final public void block(boolean runWorld) throws ParseException {
     jj_consume_token(LPAREN);
-    label_3:
-    while (true) {
-      jj_consume_token(LPAREN);
-      instruction(runWorld);
-      switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-      case LPAREN:{
-        ;
-        break;
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case LPAREN:{
+      label_3:
+      while (true) {
+        jj_consume_token(LPAREN);
+        instruction(runWorld);
+        switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+        case LPAREN:{
+          ;
+          break;
+          }
+        default:
+          jj_la1[3] = jj_gen;
+          break label_3;
         }
-      default:
-        jj_la1[3] = jj_gen;
-        break label_3;
       }
+      jj_consume_token(RPAREN);
+      break;
+      }
+    case ASSIGN:
+    case MOVE:
+    case ROBOTSKIP:
+    case TURN:
+    case FACE:
+    case PUT:
+    case PICK:
+    case MOVEDIR:
+    case RUNDIRS:
+    case MOVEFACE:
+    case NULL:
+    case IF:
+    case LOOP:
+    case REPEAT:
+    case WORD:{
+      instruction(runWorld);
+      break;
+      }
+    default:
+      jj_la1[4] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
     }
-    jj_consume_token(RPAREN);
 }
 
 //TODO: Modificar para que en efecto corra la función
@@ -150,7 +177,7 @@ Robot.functionMap.get(funName).add(tokenParamName.image);
         break;
         }
       default:
-        jj_la1[4] = jj_gen;
+        jj_la1[5] = jj_gen;
         break label_4;
       }
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
@@ -170,7 +197,7 @@ paramTokens.add(token.image);
         break;
         }
       default:
-        jj_la1[5] = jj_gen;
+        jj_la1[6] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -228,7 +255,7 @@ if (paramTokens.size() != Robot.functionMap.get(funName.image).size())
       break;
       }
     default:
-      jj_la1[6] = jj_gen;
+      jj_la1[7] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -421,7 +448,7 @@ directionsList.add(directionReturn.image);
         break;
         }
       default:
-        jj_la1[7] = jj_gen;
+        jj_la1[8] = jj_gen;
         break label_5;
       }
     }
@@ -518,7 +545,7 @@ if (moveValue != -1 && runWorld)
       break;
       }
     default:
-      jj_la1[8] = jj_gen;
+      jj_la1[9] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -547,7 +574,7 @@ if (moveValue != -1 && runWorld)
       break;
       }
     default:
-      jj_la1[9] = jj_gen;
+      jj_la1[10] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -625,7 +652,7 @@ if (runWorld)
       break;
       }
     default:
-      jj_la1[10] = jj_gen;
+      jj_la1[11] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -665,7 +692,7 @@ orientationTokenValue = orientationToken.image;
   boolean returnValue = false;
     jj_consume_token(BLOCKED);
 orientationValue = world.getFacing();
-    position = world.getPosition();
+    position = (Point) world.getPosition().clone();
     if (orientationValue == 0) {
       position.y -= 1;
      } else if (orientationValue == 1) {
@@ -736,48 +763,49 @@ if (value == -1) { {if ("" != null) return false;} }
     throw new Error("Missing return statement in function");
 }
 
+//(if (can-move? :south)(move-face 3 :south)(null))
   final public boolean canmoveCondition() throws ParseException {boolean outOfBounds = false;
   boolean canMove = false;
   Token tokenOrientation;
   String orientationTokenValue;
-  Point position = world.getPosition();
+  Point currentPosition = (Point) world.getPosition().clone();
     jj_consume_token(CANMOVE);
     tokenOrientation = jj_consume_token(ORIENTATION);
 orientationTokenValue = tokenOrientation.image;
    if(orientationTokenValue.equals(":north")) {
-      position.y -= 1;
+      currentPosition.y -= 1;
 
       //comprobar si está dentro del tablero
-    if (position.y > world.getN() || position.y < 1) {
+    if (currentPosition.y > world.getN() || currentPosition.y < 1) {
       outOfBounds = true;
       }
 
       } else if (orientationTokenValue.equals(":south")) {
-        position.y += 1;
+        currentPosition.y += 1;
 
         //comprobar si está dentro del tablero
-        if (position.y > world.getN() || position.y < 1) {
+        if (currentPosition.y > world.getN() || currentPosition.y < 1) {
                 outOfBounds = true;
                 }
 
       } else if (orientationTokenValue.equals(":east")) {
-        position.x += 1;
+        currentPosition.x += 1;
 
-        if (position.x > world.getN() || position.x < 1) {
+        if (currentPosition.x > world.getN() || currentPosition.x < 1) {
                 outOfBounds = true;
         }
 
       } else if (orientationTokenValue.equals(":west")) {
-                position.x -= 1;
+                currentPosition.x -= 1;
 
                 //comprobar si está dentro del tablero
-                if (position.x > world.getN() || position.x < 1) {
+                if (currentPosition.x > world.getN() || currentPosition.x < 1) {
                 outOfBounds = true;
         }
         }
 
     //comprobar isBlocked
-    if (!world.isBlocked(position) && !outOfBounds) {
+    if (!world.isBlocked(currentPosition) && !outOfBounds) {
       canMove = true;
       }
 
@@ -870,7 +898,7 @@ String image = token.image;
       break;
       }
     default:
-      jj_la1[11] = jj_gen;
+      jj_la1[12] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -909,7 +937,7 @@ if (!(token.image.equals(":front") || token.image.equals(":right") || token.imag
       break;
       }
     default:
-      jj_la1[12] = jj_gen;
+      jj_la1[13] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -950,7 +978,7 @@ if (!(token.image.equals(":front") || token.image.equals(":right") || token.imag
           break;
           }
         default:
-          jj_la1[13] = jj_gen;
+          jj_la1[14] = jj_gen;
           jj_consume_token(-1);
           throw new ParseException();
         }
@@ -968,7 +996,7 @@ try {
           break;
           }
         default:
-          jj_la1[14] = jj_gen;
+          jj_la1[15] = jj_gen;
           break label_6;
         }
       }
@@ -980,7 +1008,7 @@ try {
       break;
       }
     default:
-      jj_la1[15] = jj_gen;
+      jj_la1[16] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -996,7 +1024,7 @@ try {
   public Token jj_nt;
   private int jj_ntk;
   private int jj_gen;
-  final private int[] jj_la1 = new int[16];
+  final private int[] jj_la1 = new int[17];
   static private int[] jj_la1_0;
   static private int[] jj_la1_1;
   static {
@@ -1004,10 +1032,10 @@ try {
 	   jj_la1_init_1();
 	}
 	private static void jj_la1_init_0() {
-	   jj_la1_0 = new int[] {0x0,0x0,0xe1ff60,0x0,0x80100000,0x80100000,0x1ff60,0x40000,0xe00000,0x1ff60,0x7f000000,0x80100000,0x1ff60,0xe1ff60,0x0,0x1,};
+	   jj_la1_0 = new int[] {0x0,0x0,0xe1ff60,0x0,0xe1ff60,0x80100000,0x80100000,0x1ff60,0x40000,0xe00000,0x1ff60,0x7f000000,0x80100000,0x1ff60,0xe1ff60,0x0,0x1,};
 	}
 	private static void jj_la1_init_1() {
-	   jj_la1_1 = new int[] {0x1,0x10,0x10,0x1,0x10,0x10,0x0,0x0,0x0,0x1,0x0,0x10,0x1,0x1c,0x1,0x1,};
+	   jj_la1_1 = new int[] {0x1,0x10,0x10,0x1,0x11,0x10,0x10,0x0,0x0,0x0,0x1,0x0,0x10,0x1,0x1c,0x1,0x1,};
 	}
 
   /** Constructor with InputStream. */
@@ -1021,7 +1049,7 @@ try {
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 16; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 17; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -1035,7 +1063,7 @@ try {
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 16; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 17; i++) jj_la1[i] = -1;
   }
 
   /** Constructor. */
@@ -1045,7 +1073,7 @@ try {
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 16; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 17; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -1063,7 +1091,7 @@ try {
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 16; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 17; i++) jj_la1[i] = -1;
   }
 
   /** Constructor with generated Token Manager. */
@@ -1072,7 +1100,7 @@ try {
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 16; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 17; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -1081,7 +1109,7 @@ try {
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 16; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 17; i++) jj_la1[i] = -1;
   }
 
   private Token jj_consume_token(int kind) throws ParseException {
@@ -1137,7 +1165,7 @@ try {
 	   la1tokens[jj_kind] = true;
 	   jj_kind = -1;
 	 }
-	 for (int i = 0; i < 16; i++) {
+	 for (int i = 0; i < 17; i++) {
 	   if (jj_la1[i] == jj_gen) {
 		 for (int j = 0; j < 32; j++) {
 		   if ((jj_la1_0[i] & (1<<j)) != 0) {
