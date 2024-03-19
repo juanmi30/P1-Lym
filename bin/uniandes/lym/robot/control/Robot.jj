@@ -119,7 +119,9 @@ void varDefinition() :
 }
 {
   <DEFVAR>(variableName = <WORD>)variableValue = value()<RPAREN>
-  {Robot.variableMap.put(variableName.image, variableValue);}
+  {Robot.variableMap.put(variableName.image, variableValue);
+	Robot.salida = "Command: defvar";
+  }
 }
 
 void procedureDefinition() :
@@ -133,6 +135,7 @@ void procedureDefinition() :
     }(<LPAREN>(params(tokenFunName.image))<RPAREN>)(<LPAREN>instruction(false))+<RPAREN>
     {
       Robot.paramFunctionMap.clear();
+      Robot.salida = "Command: procedureDefinition";
     }
 }
 
@@ -168,6 +171,9 @@ void procedureCall() :
   List<String> paramTokens = new ArrayList<>();
 }
 {
+  {
+    Robot.salida = "Command: procedureCall";
+  }
   (funName = <WORD>)(<NUM>{paramTokens.add(token.image);}|
   <CONSTANT>{paramTokens.add(token.image);}|
   varCall(){paramTokens.add(token.image);})*
@@ -500,6 +506,9 @@ void nullCommand():
 {}
 {
   < NULL >
+  {
+    Robot.salida = "Command: null";
+  }
 }
 
 /*Control Structures*/
@@ -512,6 +521,9 @@ void controlStructure(boolean runWorld) :
 void repeat(boolean runWorld) :
 {}
 {
+  {
+    Robot.salida = "Command: repeat";
+  }
   <LOOP>condition()(parseCommand(runWorld)|block(runWorld))
 }
 
@@ -520,6 +532,9 @@ void repeatTimes(boolean runWorld):
   int value;
 }
 {
+  {
+    Robot.salida = "Command: repeatTimes";
+  }
   <REPEAT>value=value()
   {
     if (runWorld)
@@ -546,6 +561,7 @@ void conditional(boolean runWorld) :
   {
     if (runWorld)
     {
+      Robot.salida = "Command: if";
       if (conditionReturn)
       {
         block(true);

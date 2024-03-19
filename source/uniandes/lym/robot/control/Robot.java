@@ -36,6 +36,7 @@ public class Robot implements RobotConstants {
     variableValue = value();
     jj_consume_token(RPAREN);
 Robot.variableMap.put(variableName.image, variableValue);
+        Robot.salida = "Command: defvar";
 }
 
   final public void procedureDefinition() throws ParseException {Token tokenFunName;
@@ -62,6 +63,7 @@ Robot.functionMap.put(tokenFunName.image, paramsList);
     }
     jj_consume_token(RPAREN);
 Robot.paramFunctionMap.clear();
+      Robot.salida = "Command: procedureDefinition";
 }
 
   final public void params(String funName) throws ParseException {Token tokenParamName;
@@ -166,6 +168,7 @@ Robot.functionMap.get(funName).add(tokenParamName.image);
 //TODO: Modificar para que en efecto corra la función
   final public void procedureCall() throws ParseException {Token funName;
   List<String> paramTokens = new ArrayList<>();
+Robot.salida = "Command: procedureCall";
     funName = jj_consume_token(WORD);
     label_4:
     while (true) {
@@ -527,6 +530,7 @@ if (moveValue != -1 && runWorld)
 
   final public void nullCommand() throws ParseException {
     jj_consume_token(NULL);
+Robot.salida = "Command: null";
 }
 
 /*Control Structures*/
@@ -552,6 +556,7 @@ if (moveValue != -1 && runWorld)
 }
 
   final public void repeat(boolean runWorld) throws ParseException {
+Robot.salida = "Command: repeat";
     jj_consume_token(LOOP);
     condition();
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
@@ -581,6 +586,7 @@ if (moveValue != -1 && runWorld)
 }
 
   final public void repeatTimes(boolean runWorld) throws ParseException {int value;
+Robot.salida = "Command: repeatTimes";
     jj_consume_token(REPEAT);
     value = value();
 if (runWorld)
@@ -602,6 +608,7 @@ if (runWorld)
     conditionReturn = condition();
 if (runWorld)
     {
+      Robot.salida = "Command: if";
       if (conditionReturn)
       {
         block(true);
